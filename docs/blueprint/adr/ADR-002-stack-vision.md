@@ -1,6 +1,6 @@
 # ADR-002 — Base de visión por computador: opencv-python-headless + NumPy
 
-- **Estado:** Propuesto — se ratifica como *Aceptado* con el merge de `feature/HU-152-adr-opencv`
+- **Estado:** **Aceptado** — ratificado el 2026-07-26 vía [PR #3](https://github.com/oscardacto/asset-engine/pull/3) (merge a `develop`)
 - **Fecha:** 2026-07-26
 - **Origen:** HU-152 (backlog E7) · spec en `items/HU-152/spec/spec_tecnica.md`
 - **Decisores:** equipo técnico (@oscardacto) · análisis: Claude (orquestador-ejecutor ASDD)

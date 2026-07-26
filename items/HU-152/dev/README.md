@@ -2,7 +2,7 @@
 
 | Artefacto | Ubicación | Estado |
 |---|---|---|
-| ADR-002 — Base de visión: **opencv-python-headless + NumPy** | `docs/blueprint/adr/ADR-002-stack-vision.md` | Propuesto — se ratifica como *Aceptado* con el merge de esta rama |
+| ADR-002 — Base de visión: **opencv-python-headless + NumPy** | `docs/blueprint/adr/ADR-002-stack-vision.md` | **Aceptado** — PR #3 (2026-07-26) |
 | Dependencias de runtime | `pyproject.toml` (`opencv-python-headless>=4.10`, `numpy>=2.0`) + `uv.lock` (exactas: **cv2 5.0.0.93**, **numpy 2.5.1**, con hashes) | comiteadas |
 | Humo permanente del stack | `tests/test_stack_vision.py` — build CPU-only + operación determinista | en verde |
 
