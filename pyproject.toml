@@ -1,0 +1,73 @@
+[project]
+name = "media-optimizer"
+version = "0.1.0"
+description = "Convierte fotos y videos crudos de un negocio en contenido listo para marketing — local, determinista y no destructivo."
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.11",
+    "mypy>=1.14",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/media_optimizer"]
+
+# Límites de .claude/rules/python.md sin regla nativa de ruff (disciplina de revisión):
+# módulo ≤ 300 líneas · clase ≤ 200 · función ≤ 40 · anidamiento ≤ 3
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # pyflakes
+    "I",       # isort
+    "N",       # pep8-naming
+    "UP",      # pyupgrade
+    "B",       # flake8-bugbear
+    "A",       # flake8-builtins
+    "C4",      # flake8-comprehensions
+    "C90",     # mccabe — complejidad ciclomática ≤ 10
+    "S",       # flake8-bandit — checklist de seguridad de python.md
+    "SIM",     # flake8-simplify
+    "PL",      # pylint — incluye max-args
+    "PTH",     # flake8-use-pathlib — pathlib.Path, nunca os.path
+    "T20",     # flake8-print — cero print() en código de librería
+    "ARG",     # flake8-unused-arguments
+    "RET",     # flake8-return
+    "RUF",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 5
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR2004"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+
+[tool.coverage.run]
+source = ["src/media_optimizer"]
+
+[tool.coverage.report]
+show_missing = true

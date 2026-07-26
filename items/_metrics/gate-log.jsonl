@@ -3,3 +3,6 @@
 {"item":"HU-151","evento":"dev","fecha":"2026-07-26"}
 {"item":"HU-151","evento":"qa","fecha":"2026-07-26","criterios_total":4,"criterios_fallidos":0,"rework":false,"notas":"HU documental; CA-2 re-verificado contra maquina real al cierre; ratificacion via PR #1 a develop"}
 {"item":"HU-151","evento":"done","fecha":"2026-07-26"}
+{"item":"HU-150","evento":"draft","fecha":"2026-07-26"}
+{"item":"HU-150","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":90,"bloqueantes":0,"importantes":1,"informativas":2,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-150","evento":"dev","fecha":"2026-07-26"}
