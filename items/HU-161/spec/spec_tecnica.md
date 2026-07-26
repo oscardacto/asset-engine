@@ -202,3 +202,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 sin desviaciones (A-1/A-2/A-3 aplicadas); batería 40 tests verde, core/ 100% | Claude (ejecutor) |
