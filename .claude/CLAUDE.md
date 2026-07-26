@@ -89,7 +89,7 @@ DRAFT → SPEC → DEV → QA → DONE
 | `SPEC` | Spec técnica generada | `spec/spec_tecnica.md` |
 | `DEV` | **0 bloqueantes + ≥ 85% confianza** en la spec | artefactos de desarrollo en `dev/` |
 | `QA` | Evidencia de pruebas contra criterios de aceptación | `closure/entregables.md` |
-| `DONE` | Merge a `main` | `closure/feedback.md` + `closure/entregables.md` |
+| `DONE` | Merge a `develop` aceptado | `closure/feedback.md` + `closure/entregables.md` |
 
 ### Estructura obligatoria por WorkItem
 
@@ -282,10 +282,11 @@ Para avanzar con [ID] necesito que completes:
 □ Cobertura: ≥95% en dominio puro (core/, ranking/), ≥80% en el módulo tocado
 ```
 
-**Flujo de ramas:**
+**Flujo de ramas** (`feature → develop → main`; decidido por el equipo el 26-jul-2026, PR #1):
 ```
-□ Rama de feature por HU desde main (feature/HU-XXX-slug)
-□ Sincronizada con main antes del merge
+□ Rama de feature por HU desde develop (feature/HU-XXX-slug)
+□ Sincronizada con develop antes del merge
+□ El PR SIEMPRE apunta a develop (integración); main es la rama estable de release
 □ Hooks de pre-commit pasando (.githooks/ activado)
 □ Commits con referencia al ID de la HU
 ```
