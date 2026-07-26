@@ -13,3 +13,5 @@
 {"item":"HU-152","evento":"dev","fecha":"2026-07-26"}
 {"item":"HU-152","evento":"qa","fecha":"2026-07-26","criterios_total":7,"criterios_fallidos":0,"rework":false,"notas":"bateria re-ejecutada sobre develop post-merge PR #3; opencv 5.0.0.93 verificado CPU y determinista"}
 {"item":"HU-152","evento":"done","fecha":"2026-07-26"}
+{"item":"HU-157","evento":"draft","fecha":"2026-07-26"}
+{"item":"HU-157","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":92,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
