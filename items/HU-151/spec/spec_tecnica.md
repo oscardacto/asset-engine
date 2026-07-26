@@ -194,3 +194,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial, verificaciones de entorno y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: ADR-001 redactado (decisión: uv; estado Propuesto) en `docs/blueprint/adr/` — crea la convención de ADRs. Sin desviaciones respecto a §2 | Claude (ejecutor) |
