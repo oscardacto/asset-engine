@@ -1,20 +1,32 @@
 {
   "permissions": {
-    "allow": []
+    "allow": [
+      "PowerShell($env:Path = \"C:\\\\Users\\\\usuario\\\\.local\\\\bin;$env:Path\"; uv run pytest --cov=media_optimizer.testing 2>$null | Select-Object -Last 8; \"pytest exit=$LASTEXITCODE\"; uv run ruff check .; \"check exit=$LASTEXITCODE\"; uv run ruff format --check . | Select-Object -Last 1; \"format exit=$LASTEXITCODE\"; uv run mypy src/; \"mypy exit=$LASTEXITCODE\")",
+      "Bash(git commit -m 'HU-166 DEV: generador de fixtures sinteticos — exposiciones exactas, orientaciones, corruptos diferenciados *)"
+    ]
   },
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": ".claude/hooks/pre-edit-protection.sh" },
-          { "type": "command", "command": ".claude/hooks/rules-inject.sh" }
+          {
+            "type": "command",
+            "command": ".claude/hooks/pre-edit-protection.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/rules-inject.sh"
+          }
         ]
       },
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
-          { "type": "command", "command": ".claude/hooks/command-write-protection.sh" }
+          {
+            "type": "command",
+            "command": ".claude/hooks/command-write-protection.sh"
+          }
         ]
       }
     ]

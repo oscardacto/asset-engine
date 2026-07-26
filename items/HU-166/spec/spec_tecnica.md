@@ -223,3 +223,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 sin desviaciones (A-1…A-4 aplicadas); ruff forzó constantes para 255/100 (regla propia); batería 77 tests verde, testing/ 100% | Claude (ejecutor) |
