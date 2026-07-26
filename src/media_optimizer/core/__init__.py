@@ -5,5 +5,6 @@ archivos, ni se procesa imagen o video.
 """
 
 from media_optimizer.core.media_asset import MediaAsset, MediaType, Orientation
+from media_optimizer.core.quality_report import QualityReport, Verdict
 
-__all__ = ["MediaAsset", "MediaType", "Orientation"]
+__all__ = ["MediaAsset", "MediaType", "Orientation", "QualityReport", "Verdict"]
