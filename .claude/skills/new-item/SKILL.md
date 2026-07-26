@@ -78,7 +78,8 @@ Esqueleto de carpeta: `items/_template/`.
    ejemplos, referencias técnicas). Si hay documentos binarios (`.docx`/`.xlsx`/`.pptx`),
    conviértelos a un formato legible antes de leerlos (no asumas contenido de un binario
    sin abrirlo).
-4. **Escribir `ESTADO.md`**: `DRAFT — <YYYY-MM-DD> — @<responsable>`.
+4. **Escribir `ESTADO.md`**: `DRAFT — <YYYY-MM-DD> — @<responsable>`, y registrar el
+   evento `draft` en el gate-log (ver sección **Gate-log** al final).
 5. **Escribir/actualizar `insumos/INDICE.md`** con una fila por archivo (qué es y por qué
    importa).
 
@@ -122,6 +123,9 @@ es el contrato; mientras tenga preguntas bloqueantes, no se arranca DEV.
   proceder a FASE 3.
 - **Si NO se cumple:** el WorkItem **se queda en SPEC**. Entregar la lista de bloqueantes
   y preguntas para la sesión de refinamiento. **No se inicia `dev/`** (REGLA DE ORO).
+- **En AMBOS casos:** registrar el evento `gate_spec` en el gate-log con la confianza,
+  el conteo de preguntas y el resultado (ver sección **Gate-log**). Cada re-evaluación
+  tras un refinamiento se registra como un intento nuevo — nunca se sobreescribe.
 
 ---
 
@@ -148,9 +152,31 @@ es el contrato; mientras tenga preguntas bloqueantes, no se arranca DEV.
    sin excepción; los casos exhaustivos adicionales (partición de equivalencia, boundary
    values) son una **capa secundaria**, etiquetada como tal — nunca se presentan mezclados
    con la cobertura de criterios de aceptación como si fueran lo mismo.
-7. **Actualizar `ESTADO.md`** a `DEV`.
+7. **Actualizar `ESTADO.md`** a `DEV` y registrar el evento `dev` en el gate-log.
 
 ### Gate de salida (DEV -> QA)
 > **FUERA DE ALCANCE de new-item** — el siguiente paso concreto es invocar `/close-item`
 > para producir la evidencia de pruebas y entregar a QA. Recordar explícitamente este
 > siguiente paso al usuario al terminar la FASE 3, no darlo por hecho.
+
+---
+
+## Gate-log — memoria estructurada del gate
+
+Cada evento del ciclo se registra como **una línea JSON** al final de
+`items/_metrics/gate-log.jsonl` (crear el archivo si no existe; **append-only**, nunca
+reescribirlo). Esto convierte "pasó el gate" de una frase en un `.md` a un dato
+consultable: con el tiempo permite medir si la confianza declarada (85%, 92%…) predice
+el resultado real en QA, y cuánto tarda DRAFT→DEV.
+
+Eventos que escribe new-item:
+
+```json
+{"item":"HU-021","evento":"draft","fecha":"2026-07-26"}
+{"item":"HU-021","evento":"gate_spec","fecha":"2026-07-27","intento":1,"confianza":78,"bloqueantes":2,"importantes":3,"informativas":1,"resultado":"REQUIERE_REFINAMIENTO"}
+{"item":"HU-021","evento":"gate_spec","fecha":"2026-07-28","intento":2,"confianza":91,"bloqueantes":0,"importantes":1,"informativas":2,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-021","evento":"dev","fecha":"2026-07-28"}
+```
+
+Los eventos `qa` y `done` los escribe `/close-item`. Esquema completo y consultas de
+ejemplo: `items/_metrics/README.md`.

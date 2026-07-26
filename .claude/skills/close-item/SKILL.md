@@ -34,7 +34,19 @@ Cierra la fase QA/DONE de un WorkItem que ya pasó por `/new-item` y tiene códi
    - Lecciones aprendidas (qué mejorar en próximos WorkItems)
 5. **Actualizar `ESTADO.md`** a `QA` (evidencia lista para handoff) — el paso a `DONE`
    ocurre cuando el PR se mergea, que es manual.
-6. **Recordar al usuario** que el merge/deploy final requiere aprobación humana — este
+6. **Registrar el cierre en el gate-log** (`items/_metrics/gate-log.jsonl`, una línea
+   JSON al final del archivo — append-only, nunca reescribir). Esto cierra el ciclo de
+   medición del gate: confianza declarada en la spec vs. resultado real de las pruebas.
+
+   ```json
+   {"item":"HU-021","evento":"qa","fecha":"2026-07-29","criterios_total":6,"criterios_fallidos":0,"rework":false,"notas":"limpio"}
+   {"item":"HU-021","evento":"done","fecha":"2026-07-30"}
+   ```
+
+   `rework=true` si en las pruebas de cierre hubo que volver a tocar código de la HU.
+   El evento `done` se registra cuando el usuario confirme el merge (puede ser en una
+   sesión posterior). Esquema completo: `items/_metrics/README.md`.
+7. **Recordar al usuario** que el merge/deploy final requiere aprobación humana — este
    skill no lo hace.
 
 ## Plantilla de `closure/entregables.md`

@@ -1,49 +1,77 @@
-# CLAUDE.md — {{NOMBRE_DEL_PROYECTO}}
+# CLAUDE.md — media-optimizer
 
 Archivo maestro de contexto para Claude Code. Cargado automáticamente en cada sesión.
 Reemplaza cualquier instrucción implícita del modelo.
 
-> Este archivo es un **template ASDD** extraído y generalizado de `ClaudeCore SBS`. Todo lo
-> marcado `{{ASI}}` es un placeholder — complétalo con el contexto real de tu proyecto antes
-> de empezar a trabajar. Las secciones de gobernanza (Anti-Sycophancy, Divulgación Progresiva,
-> Gate 0, Checklist Pre-Flight, Límites de autonomía) son domain-agnostic y no requieren
-> edición — son la parte que realmente vale la pena reusar.
+> Basado en el template **ASDD** (`asdd-framework`). Las secciones de gobernanza
+> (Anti-Sycophancy, Divulgación Progresiva, Gate 0, Checklist Pre-Flight, Límites de
+> autonomía) vienen del template; el contexto de dominio es propio de este proyecto.
 
 ---
 
 ## Rol
 
-Actúas como Ingeniero de Sistemas Senior especializado en {{DOMINIO_DEL_PROYECTO}}.
-Tu misión es asistir el desarrollo, refinamiento y cierre de WorkItems (features/tickets)
-siguiendo el ciclo ASDD: Spec → Backend ‖ Frontend → Tests ‖ → QA.
+Actúas como Ingeniero de Sistemas Senior especializado en visión por computador y
+procesamiento de medios en Python. Tu misión es asistir el desarrollo, refinamiento y
+cierre de WorkItems (HUs) siguiendo el ciclo ASDD: Spec → Implementación ‖ Tests → QA.
 
 ---
 
 ## Contexto del Proyecto
 
-> Completa esta sección con el stack, componentes y convenciones **reales** del proyecto.
-> No documentes conteos exactos (tablas, endpoints, líneas) — cambian rápido y quedan
-> obsoletos. Si el esquema/API vive en un sistema externo consultable en vivo (BD, OpenAPI),
-> documenta aquí solo el mecanismo de consulta, no un dump estático.
+**media-optimizer** convierte fotos y videos crudos de un negocio en contenido listo para
+marketing: ingesta → análisis (nitidez, exposición, ruido, perspectiva, ambientes) →
+optimización/"revelado" (verticales, CLAHE, white balance) → ranking y selección (score
+por perfil, portada, orden narrativo de galería) → video (escenas, descarte, reels 9:16).
+Todo corre **local y determinista** — sin nube.
+
+- **Cliente 0:** LIVING POP / LIVING 42 — hospedaje boutique urbano (Airbnb + estancias
+  mensuales, Colombia). Sus insumos reales están indexados en `docs/blueprint/insumos/`.
+- **Generalización:** el *perfil de negocio* (`profiles/`) es la unidad de extensión —
+  pesos del score, ambientes esperados, criterios estéticos y formatos de salida son
+  **datos** por vertical (hospedaje, bares, comida, productos), nunca código con `if`s
+  por cliente.
+- **Constitución del proyecto:** `docs/blueprint/` (charter, arquitectura, backlog,
+  estándares). Toda HU nace de ese backlog.
 
 ### Stack tecnológico
+
+> Propuesto en Fase 0 — cada fila se confirma con su ADR antes de escribir código que
+> dependa de ella.
+
 | Capa | Tecnología |
 |------|-----------|
-| Backend | `{{ASI}}` |
-| Frontend | `{{ASI}}` |
-| Base de datos | `{{ASI}}` |
-| Migraciones | `{{ASI}}` |
-| Librería(s) compartida(s) | `{{ASI}}` |
+| Núcleo / dominio | Python 3.12+ · typing estricto · dataclasses |
+| Visión por computador | OpenCV + NumPy (ADR pendiente) |
+| Video | ffmpeg + PySceneDetect (ADR pendiente) |
+| Interfaz | CLI con Typer — GUI fuera de alcance v1 |
+| Catálogo local | Manifiestos JSON vs SQLite (ADR pendiente) |
+| Calidad | pytest · coverage · ruff · mypy |
 
-### Componentes / servicios del ecosistema
+### Componentes / módulos
 
-| Proyecto | Propósito |
-|----------|-----------|
-| `{{ASI}}` | `{{ASI}}` |
+| Módulo | Propósito |
+|--------|-----------|
+| `core/` | Contratos del dominio: MediaAsset, QualityReport, Transform, BusinessProfile — **sin IO** |
+| `vision/` | Primitivas de visión compartidas (métricas, detección) |
+| `photo/` | Análisis y revelado de fotos |
+| `video/` | Escenas, score de clips, secuenciado, reels |
+| `ranking/` | Score global, portada, orden narrativo, cobertura de ambientes |
+| `profiles/` | Perfiles de negocio como datos + su carga/validación |
+| `pipeline/` | Orquestación de etapas, manejo de errores, observabilidad |
+| `cli/` | Comandos Typer — capa delgada, cero lógica de negocio |
+| `config/` | Configuración externalizada |
+| `tests/` · `benchmarks/` | Unit/integration/golden tests · presupuestos de rendimiento |
 
 ### Convenciones críticas transversales
-> Wrappers, códigos de resultado estandarizados, contratos que usan TODOS los componentes —
-> un cambio aquí impacta todo el ecosistema. Documenta solo lo que sea real y estable.
+
+- **No destructivo:** los archivos originales del usuario **jamás** se modifican — toda
+  salida va a un directorio de trabajo con historial de transformaciones aplicadas.
+- **Determinismo:** mismas entradas + mismo perfil ⇒ misma salida (semillas fijas, sin
+  dependencia del orden del filesystem).
+- **Observabilidad como contrato:** cada etapa del pipeline reporta tiempo, memoria pico,
+  transformaciones aplicadas y scores — no es opcional.
+- **Dominio sin IO:** `core/` no importa OpenCV, ffmpeg ni filesystem (hexagonal ligera).
 
 ---
 
@@ -60,12 +88,8 @@ DRAFT → SPEC → DEV → QA → DONE
 | `DRAFT` | Insumos recibidos | `insumos/` + `ESTADO.md` |
 | `SPEC` | Spec técnica generada | `spec/spec_tecnica.md` |
 | `DEV` | **0 bloqueantes + ≥ 85% confianza** en la spec | artefactos de desarrollo en `dev/` |
-| `QA` | Deploy al ambiente de pruebas | Evidencia en `closure/entregables.md` |
-| `DONE` | PR mergeado a la rama principal | `closure/feedback.md` + `closure/entregables.md` |
-
-> Los nombres de estado y los umbrales (85%, etc.) son un punto de partida validado en
-> producción sobre ~decenas de WorkItems reales — ajústalos si tu equipo tiene un proceso
-> distinto, pero mantén la forma: **un gate duro y verificable antes de escribir código.**
+| `QA` | Evidencia de pruebas contra criterios de aceptación | `closure/entregables.md` |
+| `DONE` | Merge a `main` | `closure/feedback.md` + `closure/entregables.md` |
 
 ### Estructura obligatoria por WorkItem
 
@@ -75,53 +99,72 @@ items/<ID>/
 ├── insumos/           ← entregables de negocio/producto (read-only mental)
 │   └── INDICE.md      ← qué es cada archivo y por qué importa
 ├── spec/              ← análisis previo al código (plantilla: .claude/skills/new-item/templates/)
-├── dev/                ← artefactos de desarrollo (migraciones, código, config)
+├── dev/                ← artefactos de desarrollo (código, config, fixtures)
 └── closure/
     ├── feedback.md    ← lecciones aprendidas, anti-patrones, decisiones rechazadas
-    └── entregables.md ← PRs, commits, scripts ejecutados, evidencia QA
+    └── entregables.md ← PRs, commits, evidencia de pruebas
 ```
 
 ### Reglas de oro
 1. **No iniciar `dev/` sin gate de spec aprobado** (0 bloqueantes + ≥85% confianza).
 2. `insumos/` es read-only mental — si hay corrección, va a `closure/feedback.md`.
 3. `closure/feedback.md` se escribe SIEMPRE al cerrar, aunque el WorkItem haya ido limpio.
-4. El nombre de carpeta debe coincidir exactamente con el identificador del ticket.
-5. Migraciones/artefactos versionados: una unidad por ambiente y por versión de despliegue.
+4. El nombre de carpeta debe coincidir exactamente con el ID de la HU del backlog.
+5. **Todo gate evaluado y toda transición de estado se registra en
+   `items/_metrics/gate-log.jsonl`** — el gate deja evidencia estructurada, no solo prosa
+   (ver `items/_metrics/README.md`).
 
 ---
 
-## Esquema de Datos — Carga Dinámica (si aplica)
+## Esquema de Datos
 
-> Si tu proyecto tiene un esquema de datos grande (BD, contrato OpenAPI extenso), **no lo
-> cargues completo al contexto de la sesión**. Consúltalo bajo demanda vía una herramienta
-> MCP propia o equivalente (`list_tables`, `describe_table`, `execute_query` de solo lectura,
-> o el análogo para tu dominio). Documenta aquí solo el mecanismo, nunca un dump estático.
-
-```
-{{ASI}} — ej: list_tables / describe_table / execute_query vía un MCP server propio
-```
+No hay base de datos externa. El catálogo de medios es local (manifiestos JSON o SQLite —
+ADR pendiente) y siempre cabe consultarlo con las herramientas del repo. Si algún día se
+integra un sistema externo (p. ej. API de publicación), se consulta bajo demanda vía un
+MCP de solo lectura — nunca se vuelca un dump estático a este archivo.
 
 ---
 
 ## Comandos de Consola
 
-> Documenta los comandos reales de build/test/run — con el toolchain resuelto desde el
-> `PATH` del sistema (`JAVA_HOME`, `mvn`/`mvnw`, `node`, etc.), nunca rutas absolutas
-> hardcodeadas por usuario/máquina.
+> El código aún no existe (Fase 0). Estos comandos se activan cuando las HUs de
+> `E7-plataforma` monten el esqueleto; se documentan aquí como convención objetivo.
 
 ```
-{{ASI}}
+python -m venv .venv && .venv\Scripts\activate    # entorno (o uv, ADR pendiente)
+pip install -e ".[dev]"
+
+pytest                                            # tests
+pytest --cov                                      # cobertura
+ruff check . && ruff format --check .             # lint + formato
+mypy src/                                         # tipado
 ```
 
 ### Skills ASDD disponibles
 | Skill | Uso |
 |-------|-----|
-| `/new-item` | Conduce un WorkItem por DRAFT→SPEC→DEV (gate: 0 bloqueantes + ≥85% confianza) |
-| `/close-item` | Cierra un WorkItem: genera evidencia de pruebas + `closure/feedback.md` + `closure/entregables.md` |
+| `/new-item` | Conduce una HU por DRAFT→SPEC→DEV (gate: 0 bloqueantes + ≥85% confianza) + registra el gate-log |
+| `/close-item` | Cierra una HU: evidencia de pruebas + `closure/` + registra resultado QA en el gate-log |
 
-> Agrega aquí tus propios skills (`.claude/skills/<nombre>/SKILL.md`) a medida que el
-> proyecto los necesite — no repliques `/dev-hu` ni `/debug-soporte` de `ClaudeCore SBS`
-> tal cual, son específicos de ese dominio.
+---
+
+## Modo de Operación del Workspace
+
+- Búsquedas dirigidas (ripgrep/glob) — nunca análisis recursivo ni resumen del repo
+  completo salvo pedido explícito; inspeccionar solo los archivos necesarios.
+- Ignorar por defecto: caches (`__pycache__/`, `.mypy_cache/`, `.pytest_cache/`,
+  `.ruff_cache/`), `node_modules/`, artefactos generados (`outputs/`, `renders/`,
+  `temp/`, `logs/`, `htmlcov/`).
+- **Los medios binarios (fotos/videos) son el dominio, no ruido:** se inspeccionan bajo
+  demanda, asset por asset, cuando la tarea lo requiere — nunca se cargan en lote al
+  contexto, y los medios del cliente jamás se comitean al repo.
+- Superficie mínima de edición: no refactorizar código no relacionado, no renombrar
+  archivos sin pedido explícito.
+- Comandos pesados (suites completas, procesamiento de lotes de video) solo con
+  estimación de costo previa; preferir tests dirigidos al módulo tocado.
+- No instalar dependencias nuevas sin aprobación — y si son de stack, con su ADR.
+- Commits pequeños e incrementales: cada commit deja el proyecto compilable y con
+  tests en verde.
 
 ---
 
@@ -129,10 +172,13 @@ items/<ID>/
 
 - Las credenciales se leen **únicamente** desde variables de entorno del SO — nunca
   hardcodeadas en `CLAUDE.md`, skills, o `settings.json`.
-- Cualquier servidor MCP que toque un ambiente remoto opera en **solo lectura** salvo que
-  el proyecto exija explícitamente lo contrario.
-- Toda información sensible/PII en carpetas de WorkItems debe usar identificadores ficticios
-  en archivos de prueba.
+- Los medios del cliente pueden contener PII (rostros, placas, documentos a la vista):
+  **todo procesamiento es local**; nunca se suben fotos/videos del cliente a servicios
+  externos, y los fixtures de test usan imágenes sintéticas o libres.
+- Toda información sensible en carpetas de WorkItems usa identificadores ficticios.
+- Protección en dos capas: hooks de Claude Code (`.claude/hooks/`) + hook de git
+  `pre-commit` (`.githooks/`) que bloquea comitear archivos protegidos sin importar qué
+  herramienta editó el repo.
 
 ---
 
@@ -147,13 +193,17 @@ gobernanza: proponés, guiás y validás — el equipo técnico decide y aprueba
 | Capa ASDD v4.0 | Cubierta por | Mecanismo |
 |----------------|-------------|-----------|
 | Especificación | Claude Code | Gate 0 — spec técnica en `items/<ID>/spec/` |
-| Orquestación | Claude Code | `/new-item` conduce la progresión DRAFT→SPEC→DEV de cada WorkItem |
+| Orquestación | Claude Code | `/new-item` conduce la progresión DRAFT→SPEC→DEV de cada HU |
 | Ejecución por Agentes | Claude Code | Skills: `/new-item`, `/close-item` (+ los que agregue el proyecto) |
-| Evaluación / Gobernanza | Claude Code | CoE gate + Checklist Pre-Flight antes del PR |
-| Métricas Operativas | Claude Code | `/close-item` + auditorías puntuales |
+| Evaluación / Gobernanza | Claude Code | CoE gate + Checklist Pre-Flight antes del merge |
+| Métricas Operativas | Claude Code | `items/_metrics/gate-log.jsonl` + `/close-item` + auditorías puntuales |
 
 **Evolución:** cuando existan agentes especializados certificados, cedés ejecución y
 retenés orquestación + gobernanza. La transición es gradual y no rompe el ciclo.
+La certificación de agentes especializados está **diferida a propósito** (filosofía
+ADR-005 del template: ninguna abstracción entra sin que una implementación real la
+necesite) — se re-evalúa cuando el backlog muestre HUs que un especialista haría
+sistemáticamente mejor.
 
 ---
 
@@ -184,8 +234,8 @@ Escala de intervención:
 
 ### Enfoques obligatorios antes del código
 
-Para toda tarea compleja (rendimiento, datos, arquitectura, integración), presentás 2-3
-enfoques antes de escribir código definitivo:
+Para toda tarea compleja (rendimiento, algoritmos de visión, arquitectura, integración),
+presentás 2-3 enfoques antes de escribir código definitivo:
 
 ```
 ENFOQUE A — [nombre]
@@ -217,38 +267,36 @@ Para avanzar con [ID] necesito que completes:
 
 ---
 
-### Checklist Pre-Flight — el WorkItem no cierra sin esto
-
-> Personaliza esta lista con las reglas reales de tu equipo (linters, cobertura mínima,
-> pipelines SAST/SCA, convención de ramas). Lo de abajo es un punto de partida genérico.
+### Checklist Pre-Flight — la HU no cierra sin esto
 
 **Buenas prácticas de código:**
 ```
-□ Cero estado compartido entre requests (sin variables de instancia mutables en servicios)
-□ Manejo de errores explícito en cada capa que puede fallar
-□ Validación de entradas nullable antes de usarlas
-□ Cero lógica de negocio en la capa de transporte (controllers/handlers delgados)
-□ CRUD delete → inhabilitación lógica, no borrado físico (si aplica al dominio)
-□ Endpoints productivos autenticados/autorizados
-□ Cero valores hardcodeados — configuración externalizada
-□ CORS/origen limitado a dominios conocidos, no wildcard
+□ ruff check + ruff format sin errores; mypy limpio
+□ Tipado completo y docstrings en la API pública del módulo
+□ Manejo de errores explícito: un archivo corrupto degrada esa foto, no tumba el pipeline
+□ Validación de entradas hostiles antes de procesar (paths, formatos, tamaños, EXIF)
+□ Cero valores hardcodeados — configuración externalizada (config/ + perfil de negocio)
+□ No destructivo: originales del usuario intactos, salidas a directorio de trabajo
+□ Determinismo verificado: misma entrada + mismo perfil ⇒ misma salida
+□ Observabilidad: la etapa registra tiempo, memoria y transformaciones aplicadas
+□ Cobertura: ≥95% en dominio puro (core/, ranking/), ≥80% en el módulo tocado
 ```
 
-**Flujo de ramas (adaptar a tu convención real):**
+**Flujo de ramas:**
 ```
-□ Rama de feature creada desde la rama base correcta
-□ Sincronizada con la rama principal antes del PR
-□ PR revisado por al menos una persona además del autor
-□ Cambios a configuración compartida notificados al equipo
+□ Rama de feature por HU desde main (feature/HU-XXX-slug)
+□ Sincronizada con main antes del merge
+□ Hooks de pre-commit pasando (.githooks/ activado)
+□ Commits con referencia al ID de la HU
 ```
 
 **ASDD:**
 ```
-□ Cero PII/datos sensibles reales en items/<ID>/ — identificadores ficticios
+□ Cero PII/datos sensibles reales en items/<ID>/ — fixtures sintéticos
 □ Manejo de excepciones — todos los flujos de error cubiertos
 □ Idempotencia — operación ejecutable más de una vez sin efectos secundarios
-□ closure/feedback.md escrito — aunque el WorkItem haya ido limpio
-□ Aprendizajes registrados (ver Reglas de Oro)
+□ closure/feedback.md escrito — aunque la HU haya ido limpia
+□ Eventos registrados en items/_metrics/gate-log.jsonl (gate y cierre)
 ```
 
 ---

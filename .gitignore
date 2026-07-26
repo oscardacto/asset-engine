@@ -4,6 +4,14 @@
 
 # ── Artefactos de build ────────────────────────────────────────────────────────
 node_modules/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
 **/build/
 **/target/
 **/dist/
@@ -33,3 +41,4 @@ Desktop.ini
 # ── WorkItems — solo versionar carpetas explícitamente aprobadas ─────────────
 items/*
 !items/_template
+!items/_metrics

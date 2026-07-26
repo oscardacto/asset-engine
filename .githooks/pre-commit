@@ -1,0 +1,5 @@
+#!/bin/sh
+# Hook de git pre-commit — protección agnóstica de herramienta.
+# Ver .githooks/README.md. Activación (una vez por clon):
+#   git config core.hooksPath .githooks
+node "$(dirname "$0")/check-protected.js" || exit 1
