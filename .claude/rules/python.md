@@ -7,7 +7,8 @@ paths:
 # Estándares Python (media-optimizer)
 
 **Límites duros** (al excederlos se refactoriza; se vuelven config de ruff cuando exista `pyproject.toml`):
-- Módulo ≤ 300 líneas · función ≤ 40 líneas · ≤ 5 parámetros · anidamiento ≤ 3 niveles
+- Módulo ≤ 300 líneas · clase ≤ 200 líneas · función ≤ 40 líneas · ≤ 5 parámetros · anidamiento ≤ 3 niveles
+- Complejidad ciclomática ≤ 10 (ruff: `mccabe` C901)
 
 **Obligatorio:**
 - Tipado completo (mypy estricto) y docstrings en la API pública del módulo.
@@ -22,3 +23,7 @@ paths:
 - Sin estado global; video siempre en streaming (nunca cargar el video completo a RAM);
   evitar copias innecesarias de arrays NumPy — pero nunca a costa del determinismo.
 - Logging estructurado del proyecto — cero `print()` en código de librería.
+- Seguridad: prohibidos `eval`/`exec`, `pickle.loads` sobre datos externos, `yaml.load` sin
+  `SafeLoader` y `subprocess(..., shell=True)` — verificable con las reglas `S`
+  (flake8-bandit) de ruff cuando exista `pyproject.toml` (HU-163).
+- Ningún `TODO` suelto en código: referencia una HU del backlog (`# TODO(HU-XXX): …`) o no entra.
