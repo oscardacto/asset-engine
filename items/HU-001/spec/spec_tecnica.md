@@ -261,3 +261,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 con un refinamiento — la clave de orden pasó de 2 a 3 componentes (se añadió la ruta cruda como último desempate: dos nombres distintos pueden normalizar al mismo NFC y el orden entre ellos habría dependido del filesystem). Asunciones A-1…A-5 aplicadas; batería 92 tests verde, ingest/ 100% | Claude (ejecutor) |
