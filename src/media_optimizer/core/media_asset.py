@@ -1,9 +1,8 @@
-"""Contrato ``MediaAsset``: el sustantivo central del dominio (HU-157).
+"""Contrato ``MediaAsset``: la ficha técnica inmutable de una foto o un video.
 
-Dominio puro — sin IO: ``source`` es un valor :class:`pathlib.Path` y este módulo
-jamás toca el filesystem. Las violaciones de contrato fallan rápido con
-``ValueError``: son bugs del llamador, no datos hostiles del usuario (esos los
-maneja la ingesta, E1).
+En simple: cada archivo de medio se representa con una tarjeta que dice qué es
+(foto/video), cuánto mide, cuál es su huella de contenido y de dónde salió.
+La tarjeta no se puede alterar después de creada y nunca abre el archivo real.
 """
 
 from dataclasses import dataclass
@@ -28,13 +27,12 @@ class Orientation(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class MediaAsset:
-    """Asset catalogado: tipo (foto/video), dimensiones, hash de contenido y origen.
+    """Ficha inmutable de un medio: tipo, dimensiones en px, hash de contenido y origen.
 
-    Contrato inmutable con igualdad por valor. ``source`` apunta al archivo
-    original —que jamás se modifica (charter §6.3)— y se trata como valor:
-    verificar que exista en disco es responsabilidad de la ingesta, no del dominio.
-    ``content_hash`` es un identificador opaco no vacío; su algoritmo y formato
-    los fija HU-006.
+    ``source`` es la ruta del archivo original como dato — aquí nunca se lee el
+    disco ni se modifica el original. ``content_hash`` es una huella opaca ya
+    calculada por quien construye la ficha. Valores imposibles (dimensiones < 1,
+    hash vacío) fallan de inmediato con ``ValueError``.
     """
 
     media_type: MediaType
@@ -56,7 +54,7 @@ class MediaAsset:
 
     @property
     def orientation(self) -> Orientation:
-        """Orientación derivada: alto > ancho ⇒ V · ancho > alto ⇒ H · iguales ⇒ SQUARE."""
+        """Más alto que ancho ⇒ vertical · más ancho ⇒ horizontal · iguales ⇒ cuadrada."""
         if self.height > self.width:
             return Orientation.VERTICAL
         if self.width > self.height:

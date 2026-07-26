@@ -1,7 +1,7 @@
-"""Contratos del dominio — puros, sin IO (hexagonal ligera).
+"""Contratos del dominio: las piezas de datos que el resto del sistema intercambia.
 
-Cada contrato nace con su HU: ``MediaAsset`` (HU-157); ``QualityReport`` (HU-158),
-``Transform`` (HU-159) y ``BusinessProfile`` (HU-160) llegarán con las suyas.
+En simple: aquí solo se definen estructuras de información — nunca se abren
+archivos, ni se procesa imagen o video.
 """
 
 from media_optimizer.core.media_asset import MediaAsset, MediaType, Orientation

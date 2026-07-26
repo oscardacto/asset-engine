@@ -1,7 +1,7 @@
-"""Humo del stack de visión (HU-152/ADR-002): wheels CPU importables y deterministas.
+"""Comprueba que OpenCV y NumPy funcionan: build sin GPU y resultados repetibles.
 
-Se re-ejecuta en cada corrida de pytest, de modo que cualquier actualización futura
-del lock re-verifica los wheels automáticamente.
+En simple: si una actualización de librerías rompe la base de visión, estos
+tests avisan antes de que llegue a una foto real.
 """
 
 import cv2

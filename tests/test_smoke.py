@@ -1,4 +1,7 @@
-"""Smoke test del esqueleto (HU-150): el paquete importa y declara su versión."""
+"""Comprueba que el paquete instala, importa y declara su versión.
+
+En simple: si esto falla, el proyecto ni siquiera arranca.
+"""
 
 import media_optimizer
 

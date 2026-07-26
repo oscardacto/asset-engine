@@ -1,7 +1,7 @@
-"""Tests del contrato ``MediaAsset`` (HU-157), organizados por criterio de aceptación (spec §11).
+"""Pruebas de ``MediaAsset``: construcción, validación, orientación e igualdad.
 
-``TestCapaSecundaria`` agrupa los boundary values adicionales — capa secundaria
-del ciclo ASDD, separada a propósito de la cobertura de criterios de aceptación.
+En simple: verifican que la ficha de un medio se crea bien, rechaza datos
+inválidos y no se puede modificar. ``TestCapaSecundaria`` agrega casos límite.
 """
 
 from dataclasses import FrozenInstanceError
@@ -94,7 +94,7 @@ class TestCA5IgualdadPorValor:
 
 
 class TestCapaSecundaria:
-    """Boundary values adicionales — NO son criterios de aceptación."""
+    """Casos límite adicionales a las pruebas principales."""
 
     def test_dimension_minima_1x1_es_valida_y_cuadrada(self) -> None:
         asset = _foto(width=1, height=1)

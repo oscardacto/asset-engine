@@ -29,3 +29,7 @@ paths:
   ruff cuando exista `pyproject.toml` (HU-163).
 - Ningún `TODO` huérfano: todo `TODO` referencia una HU del backlog o un ADR
   (`# TODO(HU-XXX): …` / `# TODO(ADR-NNN): …`) o no entra al repo.
+- Docstrings y comentarios explican **qué hace** el código, en lenguaje simple (si ayuda,
+  una línea breve extra tipo "en simple: …" para entenderlo rápido). Nunca referencian
+  HUs, specs ni artefactos del proceso — la trazabilidad vive en git y en `items/`
+  (excepción: el `TODO(HU-XXX)` del punto anterior).
