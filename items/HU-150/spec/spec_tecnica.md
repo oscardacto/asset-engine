@@ -226,3 +226,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: uv 0.11.32 instalado (instalador Astral, R-1 no se materializó); esqueleto construido según §2.1 sin desviaciones; asunciones A-1 (media_optimizer) y A-3 (line-length 100) aplicadas; lock con ruff 0.16.0, mypy 2.3.0, pytest 9.1.1; batería CA-1…CA-6 en verde | Claude (ejecutor) |
