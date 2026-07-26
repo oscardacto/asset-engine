@@ -28,3 +28,5 @@
 {"item":"HU-161","evento":"dev","fecha":"2026-07-26"}
 {"item":"HU-161","evento":"qa","fecha":"2026-07-26","criterios_total":8,"criterios_fallidos":0,"rework":false,"notas":"bateria sobre develop post-merge PR #6; core 100%; limpio; pendiente HU-163: regla BLE001"}
 {"item":"HU-161","evento":"done","fecha":"2026-07-26"}
+{"item":"HU-159","evento":"draft","fecha":"2026-07-26"}
+{"item":"HU-159","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":92,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
