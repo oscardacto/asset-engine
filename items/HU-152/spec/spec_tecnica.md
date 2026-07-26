@@ -211,3 +211,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: ADR-002 redactado (headless, Propuesto); `uv add` resolvió **OpenCV 5.0.0.93** + NumPy 2.5.1 (dato nuevo: mayor 5.x, cubierto por el floor `>=4.10` y congelado por el lock — sin desviación de §2); R-1 cerrado empíricamente; batería 3 tests en verde | Claude (ejecutor) |

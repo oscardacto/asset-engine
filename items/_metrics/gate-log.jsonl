@@ -10,3 +10,4 @@
 {"item":"HU-150","evento":"done","fecha":"2026-07-26"}
 {"item":"HU-152","evento":"draft","fecha":"2026-07-26"}
 {"item":"HU-152","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":91,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-152","evento":"dev","fecha":"2026-07-26"}
