@@ -23,7 +23,9 @@ paths:
 - Sin estado global; video siempre en streaming (nunca cargar el video completo a RAM);
   evitar copias innecesarias de arrays NumPy — pero nunca a costa del determinismo.
 - Logging estructurado del proyecto — cero `print()` en código de librería.
-- Seguridad: prohibidos `eval`/`exec`, `pickle.loads` sobre datos externos, `yaml.load` sin
-  `SafeLoader` y `subprocess(..., shell=True)` — verificable con las reglas `S`
-  (flake8-bandit) de ruff cuando exista `pyproject.toml` (HU-163).
-- Ningún `TODO` suelto en código: referencia una HU del backlog (`# TODO(HU-XXX): …`) o no entra.
+- Seguridad: prohibidos `eval`/`exec`, `pickle.loads` sobre datos no confiables, `yaml.load` sin
+  `SafeLoader` y `subprocess(..., shell=True)` — este último admite excepción solo con
+  justificación documentada en un ADR. Verificable con las reglas `S` (flake8-bandit) de
+  ruff cuando exista `pyproject.toml` (HU-163).
+- Ningún `TODO` huérfano: todo `TODO` referencia una HU del backlog o un ADR
+  (`# TODO(HU-XXX): …` / `# TODO(ADR-NNN): …`) o no entra al repo.
