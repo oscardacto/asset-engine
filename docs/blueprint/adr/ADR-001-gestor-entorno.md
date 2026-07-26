@@ -1,6 +1,6 @@
 # ADR-001 — Gestor de entorno y dependencias: uv
 
-- **Estado:** Propuesto — se ratifica como *Aceptado* con el merge de `feature/HU-151-adr-entorno`
+- **Estado:** **Aceptado** — ratificado el 2026-07-26 vía [PR #1](https://github.com/oscardacto/asset-engine/pull/1) (merge a `develop`)
 - **Fecha:** 2026-07-26
 - **Origen:** HU-151 (backlog E7) · spec en `items/HU-151/spec/spec_tecnica.md`
 - **Decisores:** equipo técnico (@oscardacto) · análisis: Claude (orquestador-ejecutor ASDD)

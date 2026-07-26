@@ -4,7 +4,7 @@ El entregable de esta HU es documental y vive en el árbol del repo, no en esta 
 
 | Artefacto | Ubicación | Estado |
 |---|---|---|
-| ADR-001 — Gestor de entorno y dependencias: **uv** | `docs/blueprint/adr/ADR-001-gestor-entorno.md` | Propuesto — se ratifica como *Aceptado* con el merge de esta rama |
+| ADR-001 — Gestor de entorno y dependencias: **uv** | `docs/blueprint/adr/ADR-001-gestor-entorno.md` | **Aceptado** — PR #1 (2026-07-26) |
 | Convención de ADRs (`docs/blueprint/adr/ADR-NNN-slug.md`) | fijada por el propio ADR-001 | — |
 
 Verificaciones ejecutadas en DEV (máquina de referencia, 2026-07-26 — detalle en spec §9):
