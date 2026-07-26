@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/pre-edit-protection.sh" },
+          { "type": "command", "command": ".claude/hooks/rules-inject.sh" }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/command-write-protection.sh" }
+        ]
+      }
+    ]
+  }
+}

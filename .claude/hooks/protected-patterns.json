@@ -1,0 +1,12 @@
+[
+  "\\.env",
+  "\\.env\\.",
+  "firebase_credentials\\.json",
+  "secrets/",
+  "\\.git/",
+  "node_modules/",
+  "__pycache__/",
+  "settings\\.local\\.json",
+  "\\.pem",
+  "\\.key"
+]

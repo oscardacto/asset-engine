@@ -1,0 +1,35 @@
+# ── Secretos y configuración local (NUNCA versionar) ──────────────────────────
+.env
+.claude/settings.local.json
+
+# ── Artefactos de build ────────────────────────────────────────────────────────
+node_modules/
+**/build/
+**/target/
+**/dist/
+*.class
+*.jar
+*.war
+
+# ── Datos sensibles / PII (defensa en profundidad) ────────────────────────────
+*.backup
+*.dump
+*.bak
+*.pem
+*.key
+*.pfx
+*.p12
+*.jks
+*.keystore
+
+# ── Sistema operativo / editores ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+.idea/
+.vscode/
+
+# ── WorkItems — solo versionar carpetas explícitamente aprobadas ─────────────
+items/*
+!items/_template
