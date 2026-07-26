@@ -18,3 +18,5 @@
 {"item":"HU-157","evento":"dev","fecha":"2026-07-26"}
 {"item":"HU-157","evento":"qa","fecha":"2026-07-26","criterios_total":9,"criterios_fallidos":0,"rework":false,"notas":"bateria sobre develop post-merge PR #4; cobertura core 100%; docstrings ajustados post-merge a nueva convencion (feedback equipo, no fallo de criterio)"}
 {"item":"HU-157","evento":"done","fecha":"2026-07-26"}
+{"item":"HU-158","evento":"draft","fecha":"2026-07-26"}
+{"item":"HU-158","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":91,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
