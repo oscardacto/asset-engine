@@ -226,3 +226,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 sin desviaciones (A-1/A-2/A-3 aplicadas); nota: clases de test nombradas por comportamiento (no "CA-N"), según lección de HU-157 — la tabla de cierre mapea | Claude (ejecutor) |
