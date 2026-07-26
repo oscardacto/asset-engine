@@ -21,3 +21,5 @@
 {"item":"HU-158","evento":"draft","fecha":"2026-07-26"}
 {"item":"HU-158","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":91,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
 {"item":"HU-158","evento":"dev","fecha":"2026-07-26"}
+{"item":"HU-158","evento":"qa","fecha":"2026-07-26","criterios_total":10,"criterios_fallidos":0,"rework":false,"notas":"bateria sobre develop post-merge PR #5; cobertura core 100%; limpio"}
+{"item":"HU-158","evento":"done","fecha":"2026-07-26"}
