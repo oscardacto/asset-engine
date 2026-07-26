@@ -53,6 +53,8 @@ Todo corre **local y determinista** — sin nube.
 | Módulo | Propósito |
 |--------|-----------|
 | `core/` | Contratos del dominio: MediaAsset, QualityReport, Transform, BusinessProfile — **sin IO** |
+| `ingest/` | Escaneo, validación y catálogo de los medios crudos (E1) — infraestructura de entrada |
+| `testing/` | Generadores de datos sintéticos para tests y benchmarks (nunca medios reales) |
 | `vision/` | Primitivas de visión compartidas (métricas, detección) |
 | `photo/` | Análisis y revelado de fotos |
 | `video/` | Escenas, score de clips, secuenciado, reels |
