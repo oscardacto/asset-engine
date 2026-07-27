@@ -46,3 +46,5 @@
 {"item":"HU-002","evento":"draft","fecha":"2026-07-26"}
 {"item":"HU-002","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":92,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
 {"item":"HU-002","evento":"dev","fecha":"2026-07-26"}
+{"item":"HU-002","evento":"qa","fecha":"2026-07-26","criterios_total":11,"criterios_fallidos":0,"rework":false,"notas":"bateria sobre develop post-merge PR #10; ingest/ 100%; suite total 113 tests"}
+{"item":"HU-002","evento":"done","fecha":"2026-07-26"}
