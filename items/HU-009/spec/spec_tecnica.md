@@ -242,3 +242,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 (A-1…A-4 aplicadas). Refinamiento sobre la spec: los dos lectores de bytes se unificaron en uno tras detectar que la rama de WebP quedaba sin cubrir, y se eliminó una guarda inalcanzable (un archivo detectado como WebP siempre tiene ≥12 bytes). Batería 143 tests verde, ingest/ 100% | Claude (ejecutor) |
