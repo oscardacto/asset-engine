@@ -16,6 +16,12 @@ from media_optimizer.ingest.hashing import (
     compute_content_hash,
     find_duplicate_groups,
 )
+from media_optimizer.ingest.quarantine import (
+    QuarantinedAsset,
+    QuarantineReason,
+    TriageResult,
+    triage_media,
+)
 from media_optimizer.ingest.scanner import scan_input_folder
 
 __all__ = [
@@ -23,9 +29,13 @@ __all__ = [
     "SUPPORTED_FORMATS",
     "DuplicateGroup",
     "ImageFormat",
+    "QuarantineReason",
+    "QuarantinedAsset",
+    "TriageResult",
     "compute_content_hash",
     "detect_image_format",
     "find_duplicate_groups",
     "is_supported_image",
     "scan_input_folder",
+    "triage_media",
 ]
