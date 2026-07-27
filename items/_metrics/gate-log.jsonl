@@ -51,3 +51,5 @@
 {"item":"HU-006","evento":"draft","fecha":"2026-07-26"}
 {"item":"HU-006","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":93,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
 {"item":"HU-006","evento":"dev","fecha":"2026-07-26"}
+{"item":"HU-006","evento":"qa","fecha":"2026-07-26","criterios_total":11,"criterios_fallidos":0,"rework":false,"notas":"bateria sobre develop con merge aplicado (d05acb4); primer merge integrado por Claude; ingest/ 100%"}
+{"item":"HU-006","evento":"done","fecha":"2026-07-26"}

@@ -1,20 +1,53 @@
 {
   "permissions": {
-    "allow": []
+    "allow": [
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git diff *)",
+      "Bash(git branch *)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git rm *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(cp -r items/_template items/*)",
+      "Bash(printf '%s\\n' *)",
+      "PowerShell(uv sync*)",
+      "PowerShell(uv run *)",
+      "PowerShell(uv add *)",
+      "PowerShell(uv lock*)",
+      "PowerShell(uv --version)",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\usuario\\\\.local\\\\bin;$env:Path\"; uv sync 2>$null | Out-Null; uv run pytest --cov=media_optimizer.ingest 2>$null | Select-Object -Last 9; \"pytest exit=$LASTEXITCODE\"; uv run ruff check .; uv run ruff format --check . | Select-Object -Last 1; uv run mypy src/)",
+      "Bash(git commit -q -m 'HU-006 DONE + gobernanza: integracion a develop delegada a Claude, permisos genericos *)"
+    ]
   },
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": ".claude/hooks/pre-edit-protection.sh" },
-          { "type": "command", "command": ".claude/hooks/rules-inject.sh" }
+          {
+            "type": "command",
+            "command": ".claude/hooks/pre-edit-protection.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/rules-inject.sh"
+          }
         ]
       },
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
-          { "type": "command", "command": ".claude/hooks/command-write-protection.sh" }
+          {
+            "type": "command",
+            "command": ".claude/hooks/command-write-protection.sh"
+          }
         ]
       }
     ]

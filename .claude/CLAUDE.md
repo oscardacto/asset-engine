@@ -288,7 +288,8 @@ Para avanzar con [ID] necesito que completes:
 ```
 □ Rama de feature por HU desde develop (feature/HU-XXX-slug)
 □ Sincronizada con develop antes del merge
-□ El PR SIEMPRE apunta a develop (integración); main es la rama estable de release
+□ La integración SIEMPRE es a develop; main es la rama estable de release
+□ Claude integra a develop con la batería en verde; develop→main lo aprueba el equipo
 □ Hooks de pre-commit pasando (.githooks/ activado)
 □ Commits con referencia al ID de la HU
 ```
@@ -307,9 +308,19 @@ Para avanzar con [ID] necesito que completes:
 ### Límites de autonomía
 
 Claude Code **nunca**:
-- Aprueba Pull Requests
-- Despliega a producción
-- Modifica políticas de gobernanza del equipo
+- Integra a `main` ni despliega a producción
+- Modifica políticas de gobernanza del equipo por iniciativa propia (solo registra las que
+  el equipo decide, como esta)
 - Ejecuta comandos destructivos sin aprobación explícita en pantalla + plan de rollback
+
+**Integración a `develop` (delegada a Claude el 26-jul-2026 por @oscardacto):** tras 10 HUs
+consecutivas sin conflictos ni hallazgos en revisión, el equipo delegó el merge de
+`feature/*` a `develop`. Claude lo ejecuta **solo si** la batería completa está en verde
+sobre la rama fusionada (pytest + cobertura del módulo + ruff + mypy) y el WorkItem tiene
+su evidencia de cierre; si algo falla, no integra y reporta.
+
+**El gate humano se mueve a `develop → main`**: ahí el equipo revisa el conjunto antes de
+declarar release. Esa revisión es la que sustituye al PR por HU — no desaparece, se
+agrupa.
 
 La responsabilidad final siempre recae en el equipo técnico.
