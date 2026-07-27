@@ -245,3 +245,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial, verificación empírica del stack y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 sin desviaciones (A-1…A-4 aplicadas); batería 113 tests verde, ingest/ 100% | Claude (ejecutor) |
