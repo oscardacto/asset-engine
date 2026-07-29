@@ -42,10 +42,10 @@ Todo corre **local y determinista** — sin nube.
 | Capa | Tecnología |
 |------|-----------|
 | Núcleo / dominio | Python 3.12+ · typing estricto · dataclasses |
-| Visión por computador | OpenCV + NumPy (ADR pendiente) |
+| Visión por computador | opencv-python-headless + NumPy (ADR-002) |
 | Video | ffmpeg + PySceneDetect (ADR pendiente) |
 | Interfaz | CLI con Typer — GUI fuera de alcance v1 |
-| Catálogo local | Manifiestos JSON vs SQLite (ADR pendiente) |
+| Catálogo local | Manifiestos JSON con claves ordenadas (ADR-003) |
 | Calidad | pytest · coverage · ruff · mypy |
 
 ### Componentes / módulos

@@ -201,3 +201,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial, medición de determinismo y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: ADR-003 redactado (JSON con claves ordenadas, Propuesto) con la tabla de determinismo medida y los disparadores de reconsideración. Sin desviaciones respecto a §2 | Claude (ejecutor) |
