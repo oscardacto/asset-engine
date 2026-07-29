@@ -254,3 +254,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial, verificación empírica de cabeceras y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 (A-1…A-5 aplicadas). Refinamiento sobre la spec: se eliminó una rama muerta de `_is_truncated` (el `.get()` nunca podía devolver `None` para un formato soportado) sustituyéndola por acceso directo, que falla ruidosamente si algún día se añade un formato sin marca de cierre. Batería 167 tests verde, ingest/ 100% | Claude (ejecutor) |

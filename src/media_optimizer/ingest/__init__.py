@@ -4,6 +4,13 @@ En simple: la puerta de entrada del pipeline — de una carpeta del usuario a un
 lista ordenada de archivos, sin tocar jamás los originales.
 """
 
+from media_optimizer.ingest.dimensions import (
+    MAX_DECODED_BYTES,
+    MAX_SIDE,
+    ImageSize,
+    read_image_size,
+    read_image_size_from_path,
+)
 from media_optimizer.ingest.formats import (
     SUPPORTED_FORMATS,
     ImageFormat,
@@ -26,9 +33,12 @@ from media_optimizer.ingest.scanner import scan_input_folder
 
 __all__ = [
     "HASH_ALGORITHM",
+    "MAX_DECODED_BYTES",
+    "MAX_SIDE",
     "SUPPORTED_FORMATS",
     "DuplicateGroup",
     "ImageFormat",
+    "ImageSize",
     "QuarantineReason",
     "QuarantinedAsset",
     "TriageResult",
@@ -36,6 +46,8 @@ __all__ = [
     "detect_image_format",
     "find_duplicate_groups",
     "is_supported_image",
+    "read_image_size",
+    "read_image_size_from_path",
     "scan_input_folder",
     "triage_media",
 ]
