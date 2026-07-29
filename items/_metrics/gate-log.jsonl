@@ -66,3 +66,5 @@
 {"item":"HU-153","evento":"draft","fecha":"2026-07-26"}
 {"item":"HU-153","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":93,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
 {"item":"HU-153","evento":"dev","fecha":"2026-07-26"}
+{"item":"HU-153","evento":"qa","fecha":"2026-07-26","criterios_total":6,"criterios_fallidos":0,"rework":false,"notas":"HU documental; decision con evidencia medida; cierra el ultimo ADR de stack"}
+{"item":"HU-153","evento":"done","fecha":"2026-07-26"}

@@ -1,6 +1,6 @@
 # ADR-003 — Catálogo local: manifiestos JSON con claves ordenadas
 
-- **Estado:** Propuesto — se ratifica como *Aceptado* al integrar `feature/HU-153-adr-catalogo`
+- **Estado:** **Aceptado** — ratificado el 2026-07-26 al integrar en `develop` (merge `9cb5d48`)
 - **Fecha:** 2026-07-26
 - **Origen:** HU-153 (backlog E7) · spec en `items/HU-153/spec/spec_tecnica.md`
 - **Decisores:** equipo técnico (@oscardacto) · análisis: Claude (orquestador-ejecutor ASDD)
