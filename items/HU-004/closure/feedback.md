@@ -16,6 +16,22 @@
   de `, False`. Lo habría atrapado un test, pero es señal de que conviene releer el diff de
   una función binaria antes de ejecutar nada.
 
+## Defecto detectado tras el cierre (validación con el lote real, 2026-07-26)
+- **`Orientation = 0` se trataba como valor corrupto.** Al correr la ingesta sobre el
+  archivo real del cliente (100 JPEG), **72 de las 82 fotos con EXIF quedaron marcadas como
+  `is_malformed`** — un 88% de falsos positivos. La causa: la etiqueta Orientation existe
+  pero vale `0`, que en la práctica significa "sin declarar" y que muchas cámaras escriben
+  así. Mi parser solo aceptaba 1–8 y consideraba corrupto todo lo demás.
+- **Impacto si no se detecta:** HU-018 habría reportado al usuario que casi todo su archivo
+  tiene metadatos corruptos, que es falso y erosiona la confianza en el resto de flags.
+- **Corrección:** `0` se trata igual que la ausencia de la etiqueta (sin dato, sin marcar
+  malformado); solo los valores fuera de 0–8 indican corrupción real. Test de regresión
+  añadido con el caso literal encontrado. Verificado sobre el mismo lote: **72 → 0**.
+- **Lección:** los tests sintéticos cubrían "válido" y "absurdo" (99), pero no el valor que
+  la realidad usa para decir "no sé". **Un generador de fixtures escribe lo que el
+  programador imagina; el archivo real trae lo que el fabricante decidió.** Correr sobre
+  datos reales en cuanto haya una pieza ejecutable, aunque no exista aún la CLI.
+
 ## Decisiones rechazadas
 - **`cv2.imreadWithMetadata` para leer EXIF en producción** — rechazado por coste (ver
   arriba). Se conserva `imencodeWithMetadata` **solo en fixtures de test**, donde las

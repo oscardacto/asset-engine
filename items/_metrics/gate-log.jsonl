@@ -73,3 +73,4 @@
 {"item":"HU-004","evento":"dev","fecha":"2026-07-26"}
 {"item":"HU-004","evento":"qa","fecha":"2026-07-26","criterios_total":11,"criterios_fallidos":0,"rework":false,"notas":"bateria sobre develop con merge aplicado (6e47375); exif.py 96%, resto 100%; corrige asuncion A-2 de HU-166"}
 {"item":"HU-004","evento":"done","fecha":"2026-07-26"}
+{"item":"HU-004","evento":"qa","fecha":"2026-07-26","criterios_total":11,"criterios_fallidos":0,"rework":true,"notas":"defecto post-cierre hallado en validacion con lote real: Orientation=0 tratado como corrupto, 72/82 falsos positivos; corregido con test de regresion"}
