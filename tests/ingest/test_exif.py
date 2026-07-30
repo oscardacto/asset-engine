@@ -57,6 +57,14 @@ class TestOrientacion:
         assert datos.is_present
         assert not datos.is_malformed
 
+    def test_el_valor_cero_significa_sin_declarar_y_no_es_un_error(self, tmp_path: Path) -> None:
+        """Caso hallado en el lote real del cliente: 72 de 82 fotos traen Orientation=0."""
+        ruta = _escribir(tmp_path / "cero.jpg", jpeg_with_exif(_IMAGEN, exif_block(orientation=0)))
+        datos = read_exif(ruta)
+        assert datos.orientation is None
+        assert datos.is_present
+        assert not datos.is_malformed
+
     def test_un_valor_fuera_de_rango_se_ignora_y_marca_incompleto(self, tmp_path: Path) -> None:
         ruta = _escribir(tmp_path / "rara.jpg", jpeg_with_exif(_IMAGEN, exif_block(orientation=99)))
         datos = read_exif(ruta)
