@@ -15,6 +15,11 @@ Image = NDArray[np.uint8]
 
 _MAX_LEVEL = 255
 _MIN_QUALITY, _MAX_QUALITY = 1, 100
+_TIFF_HEADER_SIZE = 8
+_IFD_ENTRY_SIZE = 12
+_TAG_ORIENTATION = 0x0112
+_TAG_EXIF_POINTER = 0x8769
+_TAG_DATETIME_ORIGINAL = 0x9003
 
 
 def flat_image(width: int, height: int, brightness: int) -> Image:
@@ -69,6 +74,55 @@ def truncated_jpeg(image: Image, keep_fraction: float = 0.5) -> bytes:
         raise ValueError(msg)
     completo = encode_jpeg(image)
     return completo[: max(1, int(len(completo) * keep_fraction))]
+
+
+def jpeg_with_exif(image: Image, exif: bytes, quality: int = 90) -> bytes:
+    """JPEG con un bloque EXIF insertado tal cual, incluso si está corrupto.
+
+    En simple: pega los metadatos que se le den —válidos o rotos a propósito—
+    justo después de la cabecera, para poder probar cómo reacciona el lector.
+    """
+    completo = encode_jpeg(image, quality=quality)
+    cuerpo = b"Exif\x00\x00" + exif
+    segmento = b"\xff\xe1" + (len(cuerpo) + 2).to_bytes(2, "big") + cuerpo
+    return completo[:2] + segmento + completo[2:]
+
+
+def exif_block(orientation: int | None = None, captured_at: str | None = None) -> bytes:
+    """Bloque EXIF mínimo y válido con las etiquetas que se pidan."""
+    entradas: list[tuple[int, int, int, bytes]] = []
+    extra = b""
+    offset_extra = _TIFF_HEADER_SIZE + 2 + _IFD_ENTRY_SIZE * _count(orientation, captured_at) + 4
+
+    if orientation is not None:
+        entradas.append((_TAG_ORIENTATION, 3, 1, orientation.to_bytes(2, "little") + b"\x00\x00"))
+    if captured_at is not None:
+        sub_offset = offset_extra
+        entradas.append((_TAG_EXIF_POINTER, 4, 1, sub_offset.to_bytes(4, "little")))
+        texto = captured_at.encode("ascii") + b"\x00"
+        texto_offset = sub_offset + 2 + _IFD_ENTRY_SIZE + 4
+        sub = (
+            (1).to_bytes(2, "little")
+            + _entry(_TAG_DATETIME_ORIGINAL, 2, len(texto), texto_offset.to_bytes(4, "little"))
+            + b"\x00\x00\x00\x00"
+        )
+        extra = sub + texto
+
+    cuerpo = (len(entradas)).to_bytes(2, "little")
+    for etiqueta, tipo, cuenta, valor in entradas:
+        cuerpo += _entry(etiqueta, tipo, cuenta, valor)
+    cuerpo += b"\x00\x00\x00\x00"
+    return b"II\x2a\x00" + (_TIFF_HEADER_SIZE).to_bytes(4, "little") + cuerpo + extra
+
+
+def _count(orientation: int | None, captured_at: str | None) -> int:
+    return (orientation is not None) + (captured_at is not None)
+
+
+def _entry(tag: int, kind: int, count: int, value: bytes) -> bytes:
+    return (
+        tag.to_bytes(2, "little") + kind.to_bytes(2, "little") + count.to_bytes(4, "little") + value
+    )
 
 
 def not_an_image(size: int = 256) -> bytes:

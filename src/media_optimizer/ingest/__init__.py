@@ -11,6 +11,13 @@ from media_optimizer.ingest.dimensions import (
     read_image_size,
     read_image_size_from_path,
 )
+from media_optimizer.ingest.exif import (
+    ExifData,
+    ExifOrientation,
+    oriented_size,
+    read_exif,
+    read_exif_from_header,
+)
 from media_optimizer.ingest.formats import (
     SUPPORTED_FORMATS,
     ImageFormat,
@@ -37,6 +44,8 @@ __all__ = [
     "MAX_SIDE",
     "SUPPORTED_FORMATS",
     "DuplicateGroup",
+    "ExifData",
+    "ExifOrientation",
     "ImageFormat",
     "ImageSize",
     "QuarantineReason",
@@ -46,6 +55,9 @@ __all__ = [
     "detect_image_format",
     "find_duplicate_groups",
     "is_supported_image",
+    "oriented_size",
+    "read_exif",
+    "read_exif_from_header",
     "read_image_size",
     "read_image_size_from_path",
     "scan_input_folder",
