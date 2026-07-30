@@ -73,7 +73,15 @@ Queda **prohibido** por esta decisión:
 
 - listas negras de nombres reservados,
 - ramas `if` por plataforma fuera de la capa de adaptación,
-- descartar un archivo por cómo se llama.
+- descartar un archivo por cómo se llama,
+- que cualquier módulo de `src/` use `open()`, `Path.read_bytes/write_bytes/read_text/
+  write_text/stat/exists/iterdir/glob/walk`, `os.*`, `shutil.*` o `cv2.imread/imwrite`
+  sobre rutas sin pasar por la capa,
+- incorporar una dependencia que acceda a disco sin integrarla a través de la capa.
+
+**Única excepción:** los archivos de `tests/` pueden usar IO directo para *sembrar*
+fixtures — crear un caso hostil exige precisamente saltarse la normalización que la capa
+aplica. Lo que esos tests ejercitan debe seguir pasando por la capa.
 
 La forma prefijada es un **detalle de transporte**, no un dato: se aplica al cruzar hacia el
 disco y no sobrevive al regreso.
