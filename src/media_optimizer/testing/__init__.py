@@ -7,7 +7,9 @@ falsas, archivos rotos) para no depender jamás de medios reales del cliente.
 from media_optimizer.testing.synthetic import (
     Image,
     encode_jpeg,
+    exif_block,
     flat_image,
+    jpeg_with_exif,
     not_an_image,
     textured_image,
     truncated_jpeg,
@@ -17,7 +19,9 @@ from media_optimizer.testing.synthetic import (
 __all__ = [
     "Image",
     "encode_jpeg",
+    "exif_block",
     "flat_image",
+    "jpeg_with_exif",
     "not_an_image",
     "textured_image",
     "truncated_jpeg",

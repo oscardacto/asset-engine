@@ -243,3 +243,4 @@
 | Fecha | Cambio | Por |
 |---|---|---|
 | 2026-07-26 | Creación inicial, verificación empírica del stack y evaluación de gate | Claude (ejecutor) |
+| 2026-07-26 | DEV: implementado según §2.1 con **una desviación deliberada**: la extracción del bloque EXIF no usa `cv2.imreadWithMetadata` (como sugería §3.1) porque decodifica la imagen completa — ~600 MB en una foto de 200 MP — y contradice la política de la capa. Se sustituyó por un recorrido propio del segmento APP1 sobre la cabecera ya leída. `cv2.imencodeWithMetadata` sí se conserva para fabricar fixtures. Batería 193 tests verde | Claude (ejecutor) |

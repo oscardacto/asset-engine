@@ -13,6 +13,16 @@
   arranca **verificando `origin/develop`** antes de tocar nada — barato y evita construir
   sobre una base inexistente.
 
+## Corrección posterior (añadida al cerrar HU-004, 2026-07-26)
+- **La asunción A-2 de esta HU era falsa.** Se documentó que "cv2 no escribe EXIF y
+  resolverlo implicaría una dependencia nueva con su ADR", y por eso el EXIF sintético se
+  transfirió a HU-004/005. Al verificar el stack en HU-004 resultó que **OpenCV 5 sí lee y
+  escribe EXIF** (`imreadWithMetadata` / `imencodeWithMetadata`), así que no hizo falta ni
+  dependencia ni ADR: el generador se amplió con `exif_block()` y `jpeg_with_exif()` sin
+  tocar `pyproject.toml`. La asunción se escribió sin verificar porque en OpenCV 4 era
+  cierta — **una capacidad del stack se comprueba contra la versión instalada, no contra lo
+  que uno recuerda de la librería.**
+
 ## Decisiones rechazadas
 - **Colocar el generador en `tests/support/`** — rechazado (A-1): lo consumirán también
   `benchmarks/` (HU-165) y el dataset E2E (HU-185); desde `tests/` no sería importable
