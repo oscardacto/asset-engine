@@ -11,6 +11,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from media_optimizer.core import CorruptMediaError
+from media_optimizer.ingest import filesystem
 
 _HEADER_BYTES = 16
 
@@ -63,8 +64,7 @@ def is_supported_image(path: Path) -> bool:
 
 def _read_header(path: Path) -> bytes:
     try:
-        with path.open("rb") as archivo:
-            return archivo.read(_HEADER_BYTES)
+        return filesystem.read_bytes(path, count=_HEADER_BYTES)
     except OSError as error:
         raise CorruptMediaError(path, f"no se pudo leer el archivo ({error.strerror})") from error
 

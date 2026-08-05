@@ -20,6 +20,7 @@ from enum import IntEnum
 from pathlib import Path
 from typing import Literal
 
+from media_optimizer.ingest import filesystem
 from media_optimizer.ingest.dimensions import ImageSize, header_bytes_needed
 
 ByteOrder = Literal["little", "big"]
@@ -78,9 +79,7 @@ class ExifData:
 
 def read_exif(path: Path) -> ExifData:
     """Lee el EXIF de una foto sin lanzar por metadatos inválidos o ausentes."""
-    with path.open("rb") as archivo:
-        cabecera = archivo.read(header_bytes_needed())
-    return read_exif_from_header(cabecera)
+    return read_exif_from_header(filesystem.read_bytes(path, count=header_bytes_needed()))
 
 
 def read_exif_from_header(header: bytes) -> ExifData:

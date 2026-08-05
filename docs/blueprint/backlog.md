@@ -33,7 +33,7 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-151 | `ADR` Gestor de entorno y dependencias (venv+pip vs uv) | — | P0 | S |
 | HU-152 | `ADR` OpenCV+NumPy como base de visión (versiones, wheels CPU) | HU-150 | P0 | S |
 | HU-153 | `ADR` Catálogo local: manifiestos JSON vs SQLite | HU-150 | P0 | S |
-| HU-154 | `ADR` Stack de video: ffmpeg + PySceneDetect (y PyAV sí/no) | HU-150 | P2 | S |
+| HU-154 | `ADR` Stack de video: ffmpeg + PySceneDetect (y PyAV sí/no). **Obligatorio: validar la cadena contra la matriz de compatibilidad de rutas de ADR-004 antes de adoptarla** | HU-150 | P2 | S |
 | HU-155 | Configuración externalizada: carga, validación y defaults (`config/`) | HU-150 | P0 | M |
 | HU-156 | Logging estructurado base (JSON lines, niveles, cero `print`) | HU-150 | P0 | S |
 | HU-157 | Contrato `MediaAsset` en `core/` (foto/video, dimensiones, hash, origen) | HU-150 | P0 | M |
@@ -49,6 +49,7 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-167 | Generador de fixtures sintéticos de video (clips cortos, escenas, corruptos) | HU-154 | P2 | M |
 | HU-168 | Contrato `StageReport`: tiempo, memoria pico, transformaciones, scores por etapa | HU-150 | P0 | S |
 | HU-169 | Utilidades de determinismo: semillas fijas, orden estable, test de reproducibilidad E2E | HU-150 | P0 | S |
+| HU-170 | Histórico de auditoría de lotes: herramienta versionada que acumula por lote totales, duplicados, formatos, EXIF, resoluciones y causas de cuarentena, para medir si el pipeline mejora entre lotes | HU-017 | P1 | M |
 
 ## E1 · Ingesta y catálogo (HU-001–019)
 
@@ -63,13 +64,13 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-007 | Detección de compresión WhatsApp: techo 1288×952, peso, prefijo `WA` (KPI: 43/43 del cliente 0, 0 FP en serie 4-abr) | HU-002 | P0 | M |
 | HU-008 | Flag "bajo el nativo": resolución insuficiente por formato de salida del perfil (1080/1350/1920) | HU-007, HU-160 | P0 | S |
 | HU-009 | Archivos corruptos o truncados: cuarentena con causa, pipeline sigue | HU-002, HU-161 | P0 | M |
-| HU-010 | Paths unicode, nombres hostiles y colisiones de nombre | HU-001 | P0 | S |
+| HU-010 | Capa de acceso al filesystem: rutas que hoy detienen el pipeline (ADR-004) | HU-001 | P0 | M |
 | HU-011 | Límites de memoria y dimensiones: rechazo de imágenes-bomba antes de decodificar | HU-002 | P0 | M |
 | HU-012 | Persistencia del catálogo (según ADR HU-153) con escritura atómica | HU-153, HU-157 | P0 | M |
 | HU-013 | Re-ingesta idempotente: mismo input no duplica ni reprocesa | HU-012 | P0 | M |
 | HU-014 | Metadatos de video: duración, fps, resolución, codec, bitrate | HU-003 | P2 | S |
 | HU-015 | Agrupación por sesión de captura (fecha/hora EXIF → series tipo "4 de abril") | HU-004 | P1 | M |
-| HU-016 | Directorio de trabajo no destructivo: layout de salidas + verificación de que el origen queda intacto | HU-012 | P0 | S |
+| HU-016 | Directorio de trabajo no destructivo: layout de salidas + verificación de que el origen queda intacto + **saneamiento de nombres al escribir, vía la capa de ADR-004** | HU-012, HU-010 | P0 | S |
 | HU-017 | CLI `ingest`: carpeta → catálogo + resumen en consola | HU-162, HU-012 | P0 | S |
 | HU-018 | Reporte de inventario del lote (tabla por asset: dims, orientación, flags — formato Maestro §8.2) | HU-017 | P0 | S |
 | HU-019 | Sidecar de etiquetas manuales (ambiente, descarte, notas) que sobrevive re-ingestas | HU-013 | P1 | M |
