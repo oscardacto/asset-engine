@@ -84,6 +84,11 @@ def is_file(path: Path) -> bool:
     return os.path.isfile(system_path(path))  # noqa: PTH113
 
 
+def make_directory(path: Path) -> None:
+    """Crea la carpeta y las que falten por encima. Repetirlo no cambia nada."""
+    os.makedirs(system_path(path), exist_ok=True)  # noqa: PTH103 - cadena ya adaptada
+
+
 def replace_atomic(source: Path, target: Path) -> None:
     """Sustituye ``target`` por ``source`` en un solo paso indivisible.
 
