@@ -101,3 +101,5 @@
 {"item":"HU-016","evento":"done","fecha":"2026-07-26"}
 {"item":"HU-160","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":87,"bloqueantes":0,"importantes":1,"informativas":1,"resultado":"LISTA_PARA_DEV"}
 {"item":"HU-160","evento":"dev","fecha":"2026-07-26"}
+{"item":"HU-160","evento":"qa","fecha":"2026-07-26","criterios_total":12,"criterios_fallidos":0,"rework":false,"notas":"business_profile.py 100%; guardian de generalizacion verificado por inyeccion"}
+{"item":"HU-160","evento":"done","fecha":"2026-07-26"}
