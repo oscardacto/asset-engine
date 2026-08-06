@@ -4,6 +4,16 @@ En simple: la puerta de entrada del pipeline — de una carpeta del usuario a un
 lista ordenada de archivos, sin tocar jamás los originales.
 """
 
+from media_optimizer.ingest.catalog import (
+    CATALOG_FILENAME,
+    CATALOG_VERSION,
+    Catalog,
+    CatalogEntry,
+    QuarantineRecord,
+    catalog_from_triage,
+    load_catalog,
+    save_catalog,
+)
 from media_optimizer.ingest.dimensions import (
     MAX_DECODED_BYTES,
     MAX_SIDE,
@@ -39,27 +49,35 @@ from media_optimizer.ingest.quarantine import (
 from media_optimizer.ingest.scanner import scan_input_folder
 
 __all__ = [
+    "CATALOG_FILENAME",
+    "CATALOG_VERSION",
     "HASH_ALGORITHM",
     "MAX_DECODED_BYTES",
     "MAX_SIDE",
     "SUPPORTED_FORMATS",
+    "Catalog",
+    "CatalogEntry",
     "DuplicateGroup",
     "ExifData",
     "ExifOrientation",
     "ImageFormat",
     "ImageSize",
     "QuarantineReason",
+    "QuarantineRecord",
     "QuarantinedAsset",
     "TriageResult",
+    "catalog_from_triage",
     "compute_content_hash",
     "detect_image_format",
     "find_duplicate_groups",
     "is_supported_image",
+    "load_catalog",
     "oriented_size",
     "read_exif",
     "read_exif_from_header",
     "read_image_size",
     "read_image_size_from_path",
+    "save_catalog",
     "scan_input_folder",
     "triage_media",
 ]

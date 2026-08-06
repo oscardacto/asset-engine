@@ -81,3 +81,4 @@
 {"item":"HU-010","evento":"dev","fecha":"2026-07-26"}
 {"item":"HU-010","evento":"qa","fecha":"2026-07-26","criterios_total":11,"criterios_fallidos":0,"rework":false,"notas":"10/11 plenos, CA-8 (POSIX) parcial declarado; validacion real: 107->109 archivos recuperados"}
 {"item":"HU-010","evento":"done","fecha":"2026-07-26"}
+{"item":"HU-012","evento":"dev","fecha":"2026-07-26"}
