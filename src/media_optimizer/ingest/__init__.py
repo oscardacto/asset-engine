@@ -47,6 +47,7 @@ from media_optimizer.ingest.quarantine import (
     TriageResult,
     triage_media,
 )
+from media_optimizer.ingest.reingest import AssetChange, MovedAsset, ReingestPlan, plan_reingest
 from media_optimizer.ingest.scanner import scan_input_folder
 
 __all__ = [
@@ -56,6 +57,7 @@ __all__ = [
     "MAX_DECODED_BYTES",
     "MAX_SIDE",
     "SUPPORTED_FORMATS",
+    "AssetChange",
     "AssetOrientation",
     "Catalog",
     "CatalogEntry",
@@ -64,9 +66,11 @@ __all__ = [
     "ExifOrientation",
     "ImageFormat",
     "ImageSize",
+    "MovedAsset",
     "QuarantineReason",
     "QuarantineRecord",
     "QuarantinedAsset",
+    "ReingestPlan",
     "TriageResult",
     "catalog_from_triage",
     "compute_content_hash",
@@ -76,6 +80,7 @@ __all__ = [
     "is_supported_image",
     "load_catalog",
     "oriented_size",
+    "plan_reingest",
     "read_exif",
     "read_exif_from_header",
     "read_image_size",
