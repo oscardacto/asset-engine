@@ -10,6 +10,12 @@ from media_optimizer.core.business_profile import (
     OutputIntent,
     ScoringWeights,
 )
+from media_optimizer.core.determinism import (
+    stable_order,
+    stable_order_by,
+    stable_text,
+    stable_unique,
+)
 from media_optimizer.core.errors import CorruptMediaError, InvalidInputError, MediaOptimizerError
 from media_optimizer.core.media_asset import MediaAsset, MediaType, Orientation
 from media_optimizer.core.quality_report import QualityReport, Verdict
@@ -34,4 +40,8 @@ __all__ = [
     "Transform",
     "TransformHistory",
     "Verdict",
+    "stable_order",
+    "stable_order_by",
+    "stable_text",
+    "stable_unique",
 ]

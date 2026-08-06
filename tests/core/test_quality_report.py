@@ -14,27 +14,27 @@ from media_optimizer.core import QualityReport, Verdict
 
 def _reporte(
     metrics: dict[str, float] | None = None,
-    flags: frozenset[str] | None = None,
+    flags: tuple[str, ...] | None = None,
     verdict: Verdict = Verdict.SUPPORT,
 ) -> QualityReport:
     if metrics is None:
         metrics = {"mean_brightness": 118.4, "sharpness": 0.72}
     if flags is None:
-        flags = frozenset()
+        flags = ()
     return QualityReport(metrics=metrics, flags=flags, verdict=verdict)
 
 
 class TestConstruccion:
     def test_expone_metricas_flags_y_veredicto(self) -> None:
-        reporte = _reporte(flags=frozenset({"whatsapp_compressed"}))
+        reporte = _reporte(flags=("whatsapp_compressed",))
         assert reporte.metrics["mean_brightness"] == 118.4
         assert "whatsapp_compressed" in reporte.flags
         assert reporte.verdict is Verdict.SUPPORT
 
     def test_reporte_sin_metricas_ni_flags_es_valido(self) -> None:
-        reporte = _reporte(metrics={}, flags=frozenset())
+        reporte = _reporte(metrics={}, flags=())
         assert len(reporte.metrics) == 0
-        assert reporte.flags == frozenset()
+        assert reporte.flags == ()
 
 
 class TestInmutabilidad:
@@ -69,7 +69,7 @@ class TestInvariantesFailFast:
 
     def test_flag_vacio_falla(self) -> None:
         with pytest.raises(ValueError, match="flags"):
-            _reporte(flags=frozenset({"   "}))
+            _reporte(flags=("   ",))
 
 
 class TestVeredicto:
