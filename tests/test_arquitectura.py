@@ -44,6 +44,19 @@ _METODOS_DE_DISCO = frozenset(
 )
 _MODULOS_DE_DISCO = frozenset({"os", "shutil", "tempfile"})
 
+# Clases de terceros que abren el archivo por dentro: la llamada no menciona `open`
+# ni `os`, pero acaba en disco igual. Se midió que `logging.FileHandler` normaliza la
+# ruta con `abspath` y, ante un nombre de dispositivo, descarta cada registro sin
+# protestar. Heredar de ellas sí está permitido — es como la capa las adapta.
+_ABRIDORES_DE_ARCHIVO = frozenset(
+    {
+        "FileHandler",
+        "RotatingFileHandler",
+        "TimedRotatingFileHandler",
+        "WatchedFileHandler",
+    }
+)
+
 
 def _nombre_invocado(nodo: ast.Call) -> str | None:
     """Nombre relevante de una llamada, o ``None`` si pasa por la capa de acceso.
@@ -73,7 +86,11 @@ def _accesos_en(archivo: Path) -> list[tuple[int, str]]:
         nombre = _nombre_invocado(nodo)
         if nombre is None:
             continue
-        if nombre in _METODOS_DE_DISCO or nombre.split(".")[0] in _MODULOS_DE_DISCO:
+        if (
+            nombre in _METODOS_DE_DISCO
+            or nombre in _ABRIDORES_DE_ARCHIVO
+            or nombre.split(".")[0] in _MODULOS_DE_DISCO
+        ):
             hallazgos.append((nodo.lineno, nombre))
     return hallazgos
 
@@ -94,6 +111,26 @@ def test_ningun_modulo_de_produccion_toca_el_disco_por_su_cuenta() -> None:
         f"{len(infracciones)} accesos directos al filesystem fuera de la capa "
         f"(ADR-004):\n  " + "\n  ".join(infracciones)
     )
+
+
+def test_la_regla_detecta_un_handler_que_abre_el_archivo_por_dentro(tmp_path: Path) -> None:
+    """La regla tiene que ver lo que no dice `open`: se comprueba, no se supone.
+
+    Sin esto no habría forma de saber si la regla pasa por estar bien o por no
+    mirar; la versión anterior dejaba entrar `logging.FileHandler` sin protestar.
+    """
+    culpable = tmp_path / "culpable.py"
+    culpable.write_text("import logging\nh = logging.FileHandler('run.log')\n", encoding="utf-8")
+    assert _accesos_en(culpable) == [(2, "FileHandler")]
+
+
+def test_heredar_del_handler_para_adaptarlo_si_esta_permitido(tmp_path: Path) -> None:
+    """Es exactamente lo que hace la capa: envolverlo, no usarlo tal cual."""
+    correcto = tmp_path / "correcto.py"
+    correcto.write_text(
+        "import logging\nclass Propio(logging.FileHandler):\n    pass\n", encoding="utf-8"
+    )
+    assert _accesos_en(correcto) == []
 
 
 def test_la_capa_de_acceso_existe_y_esta_exenta() -> None:

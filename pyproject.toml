@@ -29,6 +29,9 @@ packages = ["src/media_optimizer"]
 target-version = "py312"
 line-length = 100
 src = ["src", "tests"]
+# items/ guarda evidencia de WorkItems, no código de la librería. Los scripts de
+# medición que viven ahí tienen que usar IO directo y print: es lo que miden.
+extend-exclude = ["items"]
 
 [tool.ruff.lint]
 select = [
