@@ -39,7 +39,10 @@
 ### 2.2 OUT — NO entra (delimitaciones)
 - Subpaquetes de la arquitectura (`core/`, `vision/`, …) → nacen con HU-157+ (cada módulo
   con su primera HU).
-- CLI Typer (HU-162) — por eso el esqueleto no tiene dependencias de runtime.
+- CLI (HU-162) — por eso el esqueleto no tiene dependencias de runtime.
+  > **Nota posterior (2026-08-06):** esta linea decia 'CLI Typer'. ADR-005 fijo `argparse`
+  > de la stdlib sobre medicion; la conclusion de la spec no cambia — sigue sin haber
+  > dependencias de runtime, y ahora tampoco las habra.
 - Pre-commit con ruff+mypy+pytest dirigido (HU-163) · benchmarks (HU-165) · logging
   (HU-156) · config externalizada (HU-155) · fixtures (HU-166).
 - Actualizar los comandos de CLAUDE.md y el flujo de ramas → propuesta de gobernanza

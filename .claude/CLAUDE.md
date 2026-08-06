@@ -44,7 +44,7 @@ Todo corre **local y determinista** — sin nube.
 | Núcleo / dominio | Python 3.12+ · typing estricto · dataclasses |
 | Visión por computador | opencv-python-headless + NumPy (ADR-002) |
 | Video | ffmpeg + PySceneDetect (ADR pendiente) |
-| Interfaz | CLI con Typer — GUI fuera de alcance v1 |
+| Interfaz | CLI con `argparse` de la stdlib + frontera tipada (ADR-005) — GUI fuera de alcance v1 |
 | Catálogo local | Manifiestos JSON con claves ordenadas (ADR-003) |
 | Calidad | pytest · coverage · ruff · mypy |
 
@@ -63,7 +63,7 @@ Todo corre **local y determinista** — sin nube.
 | `ranking/` | Score global, portada, orden narrativo, cobertura de ambientes |
 | `profiles/` | Perfiles de negocio como datos + su carga/validación |
 | `pipeline/` | Orquestación de etapas, manejo de errores, observabilidad |
-| `cli/` | Comandos Typer — capa delgada, cero lógica de negocio |
+| `cli/` | Traduce argumentos a contratos internos — capa delgada, cero lógica de negocio (`rules/cli.md`) |
 | `config/` | Configuración externalizada |
 | `tests/` · `benchmarks/` | Unit/integration/golden tests · presupuestos de rendimiento |
 

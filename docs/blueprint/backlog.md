@@ -41,7 +41,7 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-159 | Contrato `Transform` + historial de transformaciones aplicadas | HU-157 | P0 | S |
 | HU-160 | Contrato `BusinessProfile` en `core/` (solo estructura; datos en E6) | HU-150 | P0 | S |
 | HU-161 | Jerarquía de excepciones del dominio (corrupto ≠ inválido ≠ bug) | HU-150 | P0 | S |
-| HU-162 | CLI base Typer: entrypoint, `--version`, `--profile`, salida de errores | HU-150 | P0 | S |
+| HU-162 | CLI base con argparse (ADR-005): entrypoint, `--version`, contexto global, codigos de salida y traduccion de errores | HU-150 | P0 | S |
 | HU-163 | Gates de calidad locales: pre-commit con ruff+mypy+pytest dirigido | HU-150 | P0 | S |
 | HU-164 | Framework de golden tests (comparación de imágenes con tolerancia + hash) | HU-150 | P0 | M |
 | HU-165 | Framework de benchmarks con presupuestos por etapa (`benchmarks/`) | HU-150 | P1 | M |

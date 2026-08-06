@@ -116,3 +116,5 @@
 {"item":"HU-158","evento":"rework","fecha":"2026-08-06","origen":"HU-169","motivo":"flags era frozenset: orden distinto en cada proceso, defecto latente de reproducibilidad","detectado_por":"medicion con 4 semillas de hash"}
 {"item":"HU-169","evento":"qa","fecha":"2026-08-06","criterios_total":11,"criterios_fallidos":0,"rework":false,"notas":"determinism.py 100%; arregla defecto latente de HU-158; arnes entre procesos + guardian sobre core.__all__"}
 {"item":"HU-169","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-162","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":78,"bloqueantes":1,"importantes":0,"informativas":1,"resultado":"BLOQUEADA","motivo":"la superficie de comandos pedida no coincide con las 6 HU de CLI del backlog; 7 HU afectadas"}
+{"item":"ADR-005","evento":"adr_aceptado","fecha":"2026-08-06","decision":"argparse con frontera tipada","base":"medicion reproducible de 3 prototipos","dependencias_nuevas":0}

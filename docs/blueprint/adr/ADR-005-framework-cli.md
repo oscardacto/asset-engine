@@ -1,148 +1,193 @@
-# ADR-005 — Framework de la CLI: `argparse` vs `Typer`
+# ADR-005 — Framework de la CLI: `argparse` de la biblioteca estándar
 
-- **Estado:** **Pendiente de decisión arquitectónica** — el análisis está cerrado; falta la decisión del equipo
-- **Fecha:** 2026-08-06 (v2 — comparativo con evidencia medida; la v1 fue prescriptiva y se descarta)
-- **Origen:** HU-162 (backlog E7) · bloquea HU-017, HU-037, HU-184
+- **Estado:** **Aceptado** — 2026-08-06
+- **Origen:** HU-162 (backlog E7) · habilita HU-017, HU-037, HU-064, HU-078, HU-110, HU-184
 - **Decisores:** equipo técnico (@oscardacto) · medición y análisis: Claude (orquestador-ejecutor ASDD)
+- **Reemplaza:** las dos versiones previas de este ADR, que argumentaban sin haber medido.
+  Todo lo que sigue está sostenido por mediciones reproducibles; los argumentos que la
+  medición refutó **no se conservan**, ni siquiera como historia — están en el registro de
+  git si alguna vez hicieran falta.
 
 ---
 
-## Criterio de decisión
+## Contexto
 
-Fijado por el equipo el 2026-08-06:
+El charter §2 define el producto como una CLI local. La tabla de stack proponía Typer con
+la salvedad de que *"cada fila se confirma con su ADR antes de escribir código que dependa
+de ella"*. HU-162 es ese código.
+
+### Criterio de decisión (fijado por el equipo, 2026-08-06)
 
 > **Minimizar la complejidad permanente.** Una dependencia solo se incorpora si aporta un
 > beneficio **estructural** superior al coste de mantenerla durante toda la vida del
 > proyecto. No se optimiza la velocidad de escribir código, sino la mantenibilidad del
 > sistema dentro de dos años.
 
-Todo lo que sigue se evalúa contra ese criterio, no contra comodidad de desarrollo.
+### Superficie a cubrir
 
-## Cómo se midió
-
-Se construyeron **tres prototipos funcionalmente equivalentes** de la CLI real prevista
-(5 comandos — `ingest`, `analyze`, `develop`, `select`, `run` — cada uno con un argumento
-posicional `carpeta: Path` y las opciones `--workspace: Path` y `--profile: str`, más
-`--version`):
-
-| Prototipo | Qué es |
-|---|---|
-| `cli_argparse.py` | argparse idiomático, leyendo del `Namespace` |
-| `cli_argparse_tipado.py` | argparse + frontera tipada: el `Namespace` se convierte en un dataclass congelado |
-| `cli_typer.py` | Typer idiomático con `Annotated` |
-
-Medidos en la máquina de referencia (Windows 10 Pro 19045, Python 3.13.2), con `typer`
-instalado en un entorno virtual **aislado y desechable** — no se agregó nada a
-`pyproject.toml`. Los prototipos y sus salidas están en `items/HU-162/insumos/cli-bench/`.
+5 comandos, cada uno con un argumento posicional de ruta y 2–3 opciones de tipos simples
+(ruta, texto, enumerado). Sin subcomandos anidados, sin parsing dinámico, sin flags
+mutuamente excluyentes.
 
 ---
 
-## Matriz técnica
+## Alternativas evaluadas
 
-| # | Dimensión | `argparse` (stdlib) | `Typer` | Gana |
-|---|-----------|---------------------|---------|------|
-| 1 | **Dependencias transitivas** | **0** | **7**: `typer`, `rich`, `pygments`, `markdown-it-py`, `mdurl`, `shellingham`, `colorama`, `annotated-doc` | argparse |
-| 2 | **Tamaño en disco** | 0 KB (ya está en Python) | **7 512 KB**, de los cuales **5 077 KB son `pygments`** — un resaltador de sintaxis, en una CLI que nunca resalta sintaxis | argparse |
-| 3 | **Arranque** (mediana de 5, proceso completo) | **44,6 ms** | **122,3 ms** (**2,7×**) | argparse |
-| 4 | **Líneas de código propio** (5 comandos) | 23 (sin tipar) · **39** (tipado) | **34** | Typer, por **5 líneas** |
-| 5 | **`mypy --strict` detecta un error de tipo en el argumento parseado** | ❌ **No**, en la versión ingenua: `args.carpeta` es `Any` y mypy reporta *"Success: no issues found"* con un error deliberado presente<br>✅ **Sí**, en la versión tipada | ✅ **Sí**: `error: Argument 1 to "contar" has incompatible type "Path"; expected "int"` | **Empate** si argparse se tipa |
-| 6 | **Puntos de acoplamiento a la librería** | **2 líneas**, ambas dentro de `construir_parser()` y `leer()` | **9 líneas**: 4 referencias `typer.*` + **1 decorador `@app.command` por comando** | argparse |
-| 7 | **Funciones cuya firma menciona la librería** | **1** — y su parámetro es un dataclass propio, no un tipo de argparse | **5** — una por comando: `carpeta: Annotated[Path, typer.Argument(...)]` | argparse |
-| 8 | **Coste de migración futura** | Reescribir 2 funciones. El resto del sistema ve un `Invocacion` propio | Reescribir las 5 firmas + los 5 decoradores; crece **linealmente con cada comando nuevo** | argparse |
-| 9 | **Riesgo de lock-in** | Nulo: `argparse` es stdlib con garantía de compatibilidad de Python | Medio: el acoplamiento vive **en la firma de cada comando**, que es justo donde la restricción del equipo pide que no esté | argparse |
-| 10 | **Reproducibilidad de la salida persistida** | **Ninguna de las dos la afecta** — ver nota abajo | Igual | Empate |
-| 11 | **Superficie de actualización** | 0 paquetes que vigilar | 7 paquetes con su propio calendario de versiones y CVEs | argparse |
-| 12 | **Calidad de la ayuda** | Correcta y seca | Mejor estructurada (paneles, colores, `[default: …]`, `[required]`). **Pero** en la consola de la máquina de referencia los bordes salen como `+-` en vez de `┌─` | Typer |
-| 13 | **Autocompletado de shell** | No lo trae | Sí, de serie | Typer |
-| 14 | **Ayuda por comando desde el docstring** | Hay que escribirla aparte (`help=…`) | Automática | Typer |
+| | Alternativa | Descripción |
+|---|---|---|
+| **A** | `argparse` leyendo del `Namespace` | Uso idiomático directo: el resultado del parseo se consume tal cual |
+| **B** | `argparse` + frontera tipada | El `Namespace` se convierte de inmediato en un dataclass congelado, que es lo único que el resto del sistema ve |
+| **C** | `Typer` | Framework de terceros que deriva la CLI de las anotaciones de tipo |
 
-### Nota que corrige un argumento de la v1 de este ADR
-
-La v1 sostenía que `rich` amenaza el determinismo porque formatea según el ancho del
-terminal. **Se midió y el argumento estaba mal planteado:** la ayuda de Typer cambia con el
-ancho (856 → 1 575 bytes entre 60 y 120 columnas), **pero la de argparse también** (341 → 279
-bytes). Ninguna de las dos librerías escribe la salida persistida del pipeline — esa la
-genera código propio. **El determinismo no distingue entre las dos opciones**, y presentarlo
-como ventaja de una era un argumento inflado. Se retira.
+`click` se descartó sin medirlo en profundidad por un hecho comprobado: en la versión actual
+de Typer **ya no aparece en su árbol de dependencias**, así que dejó de ser la opción de
+menor huella que fue históricamente; frente a `argparse` paga una dependencia sin aportar la
+verificación de tipos que sí da B.
 
 ---
 
-## Lectura de la evidencia contra el criterio
+## Resultados medidos
 
-**El único beneficio estructural que Typer reclamaba era el tipado**, y la medición lo
-disuelve: argparse recupera la verificación completa de `mypy --strict` convirtiendo el
-`Namespace` en un dataclass congelado, y eso cuesta **5 líneas más que Typer** (39 vs 34).
+Tres prototipos **funcionalmente equivalentes** de la CLI real, medidos en la máquina de
+referencia (Windows 10 Pro 19045, Python 3.13.2). El entorno con la dependencia de terceros
+se creó **aislado y desechable**; no se agregó nada a `pyproject.toml`. Prototipos, variantes
+con error deliberado y salidas capturadas: `items/HU-162/insumos/cli-bench/`.
 
-Lo que queda a favor de Typer —ayuda más bonita, autocompletado, menos ceremonia— es
-**experiencia de desarrollo y de uso, no estructura**. Son beneficios reales, pero el
-criterio del equipo los subordina explícitamente al coste permanente.
+| # | Dimensión | A · `argparse` | B · `argparse` tipado | C · `Typer` |
+|---|-----------|----------------|------------------------|-------------|
+| 1 | Dependencias transitivas | **0** | **0** | **7** |
+| 2 | Huella en disco | 0 KB | 0 KB | **7 512 KB** — 5 077 de ellos un resaltador de sintaxis que esta CLI nunca usa |
+| 3 | Arranque, mediana de 5 procesos | **44,6 ms** | **44,6 ms** | **122,3 ms** (2,7×) |
+| 4 | Líneas de código propio (5 comandos) | 23 | **39** | 34 |
+| 5 | **`mypy --strict` detecta un error de tipo sobre el argumento parseado** | ❌ **No** — reporta *"Success: no issues found"* con el error presente | ✅ **Sí** | ✅ **Sí** |
+| 6 | Líneas acopladas a la librería | 2 | **2** | **9** |
+| 7 | Firmas de función que mencionan la librería | 1 | **1** (recibe un dataclass propio) | **5** — una por comando |
+| 8 | Crecimiento del acoplamiento | constante | **constante** | **lineal**: +1 decorador y +1 firma por comando nuevo |
+| 9 | Coste de migrar a otra librería | 2 funciones | **2 funciones** | 5 firmas + 5 decoradores, creciendo |
+| 10 | Autocompletado de shell | no | no | **sí** |
+| 11 | Ayuda derivada del docstring | no | no | **sí** |
 
-Y el coste permanente es concreto y medido:
+**Comandos exactos para reproducirlo** — ver anexo.
 
-- **7 paquetes** a vigilar durante toda la vida del proyecto, de los cuales el más pesado
-  (5 MB de `pygments`) existe para resaltar sintaxis que esta CLI nunca va a mostrar.
-- **+78 ms en cada invocación.** Un comando que se corre decenas de veces al día paga eso
-  siempre; y el smoke test E2E de HU-185 tiene un presupuesto de 60 s.
-- **El acoplamiento vive en la firma de cada comando** y crece con cada comando nuevo. La
-  restricción del equipo —*"ninguna lógica de negocio puede depender de Typer"*— se cumple
-  mejor con la opción cuyo punto de entrada al dominio recibe un dataclass propio (1 firma
-  acoplada) que con la que acopla 5 y sumando.
+### Lo que la medición refutó
 
-**Dicho al revés:** si Typer costara 0 dependencias, ganaría por las dimensiones 12–14. Con
-7, y con el tipado empatado, no hay beneficio estructural que compense.
+Dos argumentos que se habían dado por buenos **son falsos** y por eso no aparecen en este
+ADR como razones:
 
-## Recomendación
+1. *"argparse renuncia al tipado."* Falso. La renuncia es de la variante A, no de argparse.
+   La variante B recupera la verificación completa de `mypy --strict` por **5 líneas más que
+   Typer** (39 vs 34).
+2. *"Una librería de formato enriquecido amenaza el determinismo porque adapta la salida al
+   ancho del terminal."* Falso como criterio de decisión: **la ayuda de `argparse` también
+   cambia con el ancho** (341 → 279 bytes entre 60 y 120 columnas; la de Typer, 856 → 1 575).
+   Ninguna de las dos escribe la salida persistida del pipeline, que la genera código propio.
+   El determinismo **no distingue entre las alternativas** y no puede usarse para elegir.
 
-**Opción A — `argparse` con frontera tipada explícita** (el prototipo
-`cli_argparse_tipado.py`): `argparse` construye el parser, y su resultado se convierte
-inmediatamente en un dataclass congelado `Invocacion` que es lo único que el resto del
-sistema ve.
+---
 
-Esa frontera no es ceremonia: es la que hace que `mypy --strict` verifique lo que el usuario
-realmente escribió, y la que deja el acoplamiento a la librería confinado a dos funciones.
+## Decisión final
 
-**Esta recomendación invierte la de la v1 de este ADR.** La v1 recomendaba Typer sin haber
-medido nada: asumía que argparse renunciaba al tipado (falso, cuesta 5 líneas), que `rich`
-amenazaba el determinismo (falso, ambas dependen del ancho) y no contaba ni el arranque ni el
-acoplamiento por comando. Con las tres correcciones, la comparación se invierte.
+**Se adopta la alternativa B: `argparse` de la biblioteca estándar, con frontera tipada
+explícita.**
 
-### Si el equipo decide Typer de todos modos
+El parser se construye con `argparse`; su `Namespace` se convierte de inmediato en un
+dataclass congelado que es lo único que el resto del sistema ve. El patrón exacto es
+obligatorio y está normado en `.claude/rules/cli.md`.
 
-Las restricciones fijadas por el equipo se traducen así, y son verificables:
+**Razón dominante:** una vez que la medición empata el tipado (dimensión 5), el único
+diferencial que le quedaba a la alternativa C es experiencia de uso (dimensiones 10 y 11), y
+el criterio del equipo la subordina explícitamente al coste permanente. Ese coste está
+medido y es concreto: 7 paquetes a vigilar de por vida, 7,5 MB, +78 ms en cada invocación, y
+un acoplamiento que **crece con cada comando** en lugar de mantenerse constante.
 
-1. `cli/` extremadamente delgada: cada comando parsea, construye un dataclass propio e invoca
-   al dominio. **Cero lógica de negocio.** Un comando de más de ~10 líneas es la señal.
-2. **Ningún módulo fuera de `cli/` importa Typer.** Verificable ampliando
-   `tests/test_arquitectura.py`, que ya sabe detectar importaciones prohibidas por capa.
-3. `rich` nunca en salida persistida: todo reporte a archivo lo genera código propio.
-4. La salida persistida se compara byte a byte en golden tests, sin excepción.
+La dimensión 8 es la decisiva a dos años vista: con B, añadir el comando número quince no
+añade ni una línea de acoplamiento; con C, añade dos.
+
+---
+
+## Riesgos
+
+Clasificados según el efecto real de renunciar a la alternativa C. Cada uno lleva la
+evidencia que lo sostiene — no hay riesgos declarados por intuición.
+
+| Categoría | Riesgo | Severidad | Evidencia | Mitigación |
+|-----------|--------|-----------|-----------|------------|
+| **Funcional** | Que `argparse` no cubra algún tipo de argumento necesario | **Ninguna** | El prototipo implementa la superficie completa (5 comandos, rutas, textos, valores por defecto) y funciona | No aplica |
+| **Mantenibilidad** | **Que el parser y el dataclass se desincronicen**: alguien añade `--nueva-opcion` al parser y olvida el campo, o al revés. `mypy` no lo detecta porque el `Namespace` es `Any` | **Media — es el riesgo real de esta decisión** | Dimensión 5: `mypy --strict` no ve nada dentro del `Namespace`. La frontera tipada protege *aguas abajo*, no la frontera misma | **Test de gobernanza obligatorio**: comparar los `dest` declarados en el parser contra los campos del dataclass y fallar si difieren. Es la única mitigación con evidencia objetiva y por eso es la única que este ADR impone (ver HU-163) |
+| **DX** | Sin autocompletado de shell | Baja | Dimensión 10 | Ninguna dentro del criterio: cualquier solución añade una dependencia. Se asume |
+| **DX** | La ayuda de cada opción se escribe a mano (`help=`) en vez de derivarse del docstring | Baja | Dimensión 11; ya contabilizado en las 39 líneas | Se asume. Es trabajo lineal y visible en revisión |
+| **DX** | Ayuda visualmente más sobria | **Ninguna medible** | Comparadas ambas salidas: la de `argparse` es correcta y legible. En la consola de la máquina de referencia, los recuadros de la alternativa C se degradan a `+-` por codificación | No aplica |
+| **Rendimiento** | — | **Riesgo invertido** | Dimensión 3: la decisión **ahorra 78 ms por invocación**. Relevante para el presupuesto de 60 s del smoke E2E (HU-185) | No aplica |
+| **Compatibilidad** | Cambios de comportamiento de `argparse` entre versiones de Python | Baja | `argparse` es stdlib con política de compatibilidad de CPython; el proyecto fija `requires-python = ">=3.12"` y `uv.lock` fija el intérprete | Los gates de HU-163 corren sobre la versión fijada |
+| **Deuda técnica** | Que la CLI crezca hasta que `argparse` a mano resulte verboso | Baja hoy | Con 5 comandos son 39 líneas. **Extrapolar más allá sería especular, no medir** | **Umbral de reapertura explícito**, abajo |
+
+---
+
+## Impacto futuro
+
+**Umbral de reapertura de este ADR.** Se reabre —con mediciones nuevas, no con opiniones— si
+se cumple **cualquiera** de estas condiciones objetivas:
+
+1. La CLI supera **15 comandos**, o aparece un comando con subcomandos anidados o flags
+   mutuamente excluyentes.
+2. El bloque de construcción del parser supera **150 líneas** (hoy: 39 para 5 comandos).
+3. El autocompletado de shell pasa a ser un requisito de producto, no una comodidad.
+
+Mientras ninguna se cumpla, la decisión se mantiene sin revisarla.
+
+**Coste de revertir.** Medido: 2 funciones. La frontera tipada es lo que hace barata la
+marcha atrás — el resto del sistema nunca ve `argparse`, ve un dataclass propio. Esa
+propiedad **es** el beneficio estructural que justifica la decisión, y es la razón por la que
+el umbral de reapertura no da miedo.
+
+---
 
 ## Consecuencias
 
-**Si se adopta argparse (recomendado)**
-- El proyecto se mantiene con **2 dependencias de producción** (`numpy`, `opencv-headless`).
-- Coste asumido: sin autocompletado; la ayuda es más seca; hay que escribir el `help=` de
-  cada opción a mano. Ninguno es estructural y los tres son reversibles.
-- Si en el futuro la CLI creciera mucho (20+ comandos, argumentos compuestos), migrar a
-  Typer costaría reescribir 2 funciones — **este ADR se reabre entonces, con datos nuevos**.
+**Positivas**
+- El proyecto se mantiene con **dos dependencias de producción** (`numpy`,
+  `opencv-python-headless`). La CLI no añade ninguna.
+- Superficie de actualización y de cadena de suministro: **cero paquetes nuevos que vigilar**.
+- `mypy --strict` verifica el camino completo desde el argumento parseado hasta el dominio.
+- Arranque 2,7× más rápido, con efecto directo sobre el presupuesto del smoke E2E.
+- El acoplamiento a la librería queda confinado a dos funciones y **no crece**.
 
-**Si se adopta Typer**
-- 7 paquetes al lock, +78 ms por invocación, y las 4 restricciones de arriba pasan a ser
-  reglas verificadas por test, no buenas intenciones.
+**Negativas, asumidas conscientemente**
+- Sin autocompletado de shell.
+- El `help=` de cada opción se escribe a mano.
+- Aparece un riesgo nuevo —la desincronización parser/dataclass— que **no existía** con la
+  alternativa C, donde la firma era la declaración. Se neutraliza con un test de gobernanza
+  obligatorio; sin ese test, la decisión no está completa.
 
-## Qué falta para cerrar
+**Neutrales**
+- Las restricciones que el equipo había planteado para el caso de adoptar un framework de
+  terceros (capa delgada, cero lógica de negocio en `cli/`, salida persistida determinista)
+  siguen vigentes tal cual: no dependían de la librería elegida. Quedan documentadas en
+  `docs/blueprint/arquitectura.md`.
 
-Solo la decisión del equipo. Ambos caminos están medidos y HU-162 puede implementarse en
-cualquiera de los dos sin retraso.
+---
 
 ## Anexo — reproducir las mediciones
 
 ```bash
+cd items/HU-162/insumos/cli-bench
 uv venv .venv-typer && VIRTUAL_ENV=.venv-typer uv pip install typer mypy
-VIRTUAL_ENV=.venv-typer uv run --no-project mypy --strict error_argparse.py         # Success (no lo detecta)
-VIRTUAL_ENV=.venv-typer uv run --no-project mypy --strict error_argparse_tipado.py  # 1 error (sí lo detecta)
-VIRTUAL_ENV=.venv-typer uv run --no-project mypy --strict error_typer.py            # 1 error (sí lo detecta)
+
+# Dimensión 5 — quién detecta el error de tipo deliberado
+VIRTUAL_ENV=.venv-typer uv run --no-project mypy --strict error_argparse.py         # Success  (A no lo detecta)
+VIRTUAL_ENV=.venv-typer uv run --no-project mypy --strict error_argparse_tipado.py  # 1 error  (B sí)
+VIRTUAL_ENV=.venv-typer uv run --no-project mypy --strict error_typer.py            # 1 error  (C sí)
+
+# Dimensión 2 — huella en disco
 du -sk .venv-typer/Lib/site-packages/pygments                                       # 5077 KB
-COLUMNS=60 python cli_typer.py ingest --help | wc -c                                # 856
-COLUMNS=120 python cli_typer.py ingest --help | wc -c                               # 1575
+
+# Dimensión 3 — arranque
+python -c "import argparse"   # 44,6 ms de proceso completo (mediana de 5)
+python -c "import typer"      # 122,3 ms
+
+# Argumento refutado nº 2 — ambas ayudas dependen del ancho
+COLUMNS=60  python cli_argparse.py ingest --help | wc -c   # 341
+COLUMNS=120 python cli_argparse.py ingest --help | wc -c   # 279
+COLUMNS=60  python cli_typer.py    ingest --help | wc -c   # 856
+COLUMNS=120 python cli_typer.py    ingest --help | wc -c   # 1575
 ```

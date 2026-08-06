@@ -59,7 +59,7 @@ Derivados del Plan de Crecimiento (ocupación 45% → 65% en Q4) y del Maestro �
 **Dentro:** ingesta con validación hostil → análisis (nitidez, exposición, ruido,
 perspectiva, ambientes) → revelado (verticales, CLAHE, white balance, según perfil) →
 ranking y selección (score, portada, orden narrativo, cobertura) → video (escenas,
-descarte, secuencia, reel 9:16) → reportes de observabilidad. CLI Typer.
+descarte, secuencia, reel 9:16) → reportes de observabilidad. CLI con argparse (ADR-005).
 
 **Fuera de v1:** GUI · generación de placas/piezas de diseño con texto (el generador
 editorial del Maestro §8.6 es prior art de otro proyecto; se evaluará como epic propio)
