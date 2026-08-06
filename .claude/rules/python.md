@@ -20,6 +20,14 @@ paths:
 - Toda etapa del pipeline registra tiempo, memoria pico, transformaciones aplicadas y score.
 - Composición sobre herencia; fail fast en violaciones de contrato, fail safe en datos del usuario.
 - `pathlib.Path`, nunca `os.path`; contratos de dominio como dataclasses (frozen cuando aplique).
+- **Todo acceso físico al disco pasa por la capa de adaptación del filesystem** (ADR-004).
+  Ningún módulo de `src/` abre archivos, consulta metadatos ni construye rutas específicas
+  de plataforma por su cuenta: quedan prohibidos `open()`, `Path.read_bytes/write_bytes/
+  read_text/write_text/stat/exists/iterdir/glob/walk`, `os.*`, `shutil.*` y `cv2.imread/
+  imwrite` sobre rutas. Toda dependencia nueva que toque disco se integra a través de esa
+  capa. **Excepción:** los archivos de `tests/` pueden usar IO directo para *sembrar*
+  fixtures (crear un caso hostil exige saltarse la normalización); lo que prueban debe
+  seguir pasando por la capa.
 - Sin estado global; video siempre en streaming (nunca cargar el video completo a RAM);
   evitar copias innecesarias de arrays NumPy — pero nunca a costa del determinismo.
 - Logging estructurado del proyecto — cero `print()` en código de librería.

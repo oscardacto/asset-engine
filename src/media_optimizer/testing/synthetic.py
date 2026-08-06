@@ -11,6 +11,8 @@ import cv2
 import numpy as np
 from numpy.typing import NDArray
 
+from media_optimizer.ingest import filesystem
+
 Image = NDArray[np.uint8]
 
 _MAX_LEVEL = 255
@@ -63,7 +65,7 @@ def encode_jpeg(image: Image, quality: int = 90) -> bytes:
 
 def write_jpeg(path: Path, image: Image, quality: int = 90) -> Path:
     """Escribe la imagen como archivo JPEG y devuelve la misma ruta."""
-    path.write_bytes(encode_jpeg(image, quality=quality))
+    filesystem.write_bytes(path, encode_jpeg(image, quality=quality))
     return path
 
 

@@ -12,6 +12,7 @@ material por no poder medirlo.
 from dataclasses import dataclass
 from pathlib import Path
 
+from media_optimizer.ingest import filesystem
 from media_optimizer.ingest.formats import ImageFormat
 
 _BYTES_PER_PIXEL = 3
@@ -76,9 +77,8 @@ def header_bytes_needed() -> int:
 
 
 def read_image_size_from_path(path: Path, image_format: ImageFormat) -> ImageSize | None:
-    """Variante que abre el archivo por su cuenta; útil fuera del triaje."""
-    with path.open("rb") as archivo:
-        return read_image_size(archivo.read(_HEADER_BYTES), image_format)
+    """Variante que lee el archivo por su cuenta; útil fuera del triaje."""
+    return read_image_size(filesystem.read_bytes(path, count=_HEADER_BYTES), image_format)
 
 
 def _png_size(header: bytes) -> ImageSize | None:
