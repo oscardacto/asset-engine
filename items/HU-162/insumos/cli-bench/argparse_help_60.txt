@@ -1,0 +1,11 @@
+usage: media-optimizer ingest [-h] [--workspace WORKSPACE]
+                              [--profile PROFILE]
+                              carpeta
+
+positional arguments:
+  carpeta               Carpeta de medios crudos.
+
+options:
+  -h, --help            show this help message and exit
+  --workspace WORKSPACE
+  --profile PROFILE
