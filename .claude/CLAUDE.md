@@ -63,7 +63,7 @@ Todo corre **local y determinista** — sin nube.
 | `ranking/` | Score global, portada, orden narrativo, cobertura de ambientes |
 | `profiles/` | Perfiles de negocio como datos + su carga/validación |
 | `pipeline/` | Orquestación de etapas, manejo de errores, observabilidad |
-| `cli/` | Traduce argumentos a contratos internos — capa delgada, cero lógica de negocio (`rules/cli.md`) |
+| `cli/` | Tres capacidades (`run`, `report`, `label`) que traducen argumentos a contratos internos; las etapas y los reportes son datos del registro de `pipeline/` — capa delgada, cero lógica de negocio (`rules/cli.md`) |
 | `config/` | Configuración externalizada |
 | `tests/` · `benchmarks/` | Unit/integration/golden tests · presupuestos de rendimiento |
 

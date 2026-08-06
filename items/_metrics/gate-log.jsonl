@@ -118,3 +118,5 @@
 {"item":"HU-169","evento":"done","fecha":"2026-08-06"}
 {"item":"HU-162","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":78,"bloqueantes":1,"importantes":0,"informativas":1,"resultado":"BLOQUEADA","motivo":"la superficie de comandos pedida no coincide con las 6 HU de CLI del backlog; 7 HU afectadas"}
 {"item":"ADR-005","evento":"adr_aceptado","fecha":"2026-08-06","decision":"argparse con frontera tipada","base":"medicion reproducible de 3 prototipos","dependencias_nuevas":0}
+{"item":"HU-162","evento":"decision_arquitectura","fecha":"2026-08-06","decision":"superficie CLI de 3 comandos (run/report/label); etapas y reportes como datos del registro de pipeline","hus_auditadas":112,"inconsistencias_detectadas":15,"inconsistencias_corregidas":10,"hus_nuevas":0,"divisiones":0,"fusiones":0,"cambios_de_alcance":0}
+{"item":"HU-162","evento":"gate_spec","fecha":"2026-08-06","intento":2,"confianza":93,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}

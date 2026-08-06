@@ -9,11 +9,26 @@ paths:
 
 Fijado por **ADR-005**. Aplica a esta CLI y a cualquier otra que el proyecto añada.
 
-## Regla dura
+## Regla dura 1 — solo la biblioteca estándar
 
 **`argparse` de la biblioteca estándar. Ninguna librería de terceros para parsear
 argumentos, formatear ayuda o colorear la salida.** El proyecto tiene dos dependencias de
 producción y la CLI no añade ninguna.
+
+## Regla dura 2 — las etapas son datos, no comandos
+
+La superficie es **`run <etapa>`, `report <tipo>`, `label`**. Un comando nuevo por cada
+etapa del pipeline haría que la CLI creciera con el producto, y ADR-005 se reabre a los 15
+comandos.
+
+**Ningún módulo de `cli/` puede llevar escrita a mano una lista de etapas o de reportes.**
+Los valores válidos se piden a `pipeline/registry.py`, que es la única fuente. Añadir una
+etapa se hace ahí y `cli/` no se toca. Lo verifica la regla A-6 de `arquitectura.md`.
+
+**Ninguna etapa lleva banderas propias.** Sus parámetros son datos del perfil de negocio
+(charter §3): un `--clahe-clip` sería criterio estético fuera del perfil. Toda etapa recibe
+lo mismo — workspace, perfil y opcionalmente un origen—, y por eso la etapa es un argumento
+posicional con `choices`, no un subparser anidado.
 
 ## El patrón: frontera tipada
 

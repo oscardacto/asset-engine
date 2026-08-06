@@ -18,14 +18,14 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 
 | Hito | Entrega | Épicas involucradas | Valor para el cliente 0 |
 |------|---------|---------------------|--------------------------|
-| **M1 — Auditoría reproducible** | `ingest` + `analyze` + reporte | E7, E1, E2, E6 (parcial) | Reproduce la auditoría manual del Maestro §8.2 con un comando |
-| **M2 — Revelado determinista** | `develop` por lotes | E3, E6 | Reemplaza el revelado manual del 25-jul, con golden tests |
-| **M3 — Selección y galería** | `rank` / `select` | E4 | Portada, orden narrativo y cobertura de ambientes |
-| **M4 — Reels** | `reel` | E5, E8 | Verticales 9:16 desde clips crudos |
+| **M1 — Auditoría reproducible** | `run ingest` + `run analyze` + `report inventory` | E7, E1, E2, E6 (parcial) | Reproduce la auditoría manual del Maestro §8.2 con un comando |
+| **M2 — Revelado determinista** | `run develop` por lotes | E3, E6 | Reemplaza el revelado manual del 25-jul, con golden tests |
+| **M3 — Selección y galería** | `run select` | E4 | Portada, orden narrativo y cobertura de ambientes |
+| **M4 — Reels** | `run reel` | E5, E8 | Verticales 9:16 desde clips crudos |
 
 ---
 
-## E7 · Plataforma (HU-150–169) — el esqueleto va primero
+## E7 · Plataforma (HU-150–170) — el esqueleto va primero
 
 | ID | HU | Depende de | Prio | Est |
 |----|----|-----------|------|-----|
@@ -49,7 +49,7 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-167 | Generador de fixtures sintéticos de video (clips cortos, escenas, corruptos) | HU-154 | P2 | M |
 | HU-168 | Contrato `StageReport`: tiempo, memoria pico, transformaciones, scores por etapa | HU-150 | P0 | S |
 | HU-169 | Utilidades de determinismo: semillas fijas, orden estable, test de reproducibilidad E2E | HU-150 | P0 | S |
-| HU-170 | Histórico de auditoría de lotes: herramienta versionada que acumula por lote totales, duplicados, formatos, EXIF, resoluciones y causas de cuarentena, para medir si el pipeline mejora entre lotes | HU-017 | P1 | M |
+| HU-170 | Reporte `history` (`report history`): histórico de auditoría que acumula por lote totales, duplicados, formatos, EXIF, resoluciones y causas de cuarentena, para medir si el pipeline mejora entre lotes | HU-017 | P1 | M |
 
 ## E1 · Ingesta y catálogo (HU-001–019)
 
@@ -71,8 +71,8 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-014 | Metadatos de video: duración, fps, resolución, codec, bitrate | HU-003 | P2 | S |
 | HU-015 | Agrupación por sesión de captura (fecha/hora EXIF → series tipo "4 de abril") | HU-004 | P1 | M |
 | HU-016 | Directorio de trabajo no destructivo: layout de salidas + verificación de que el origen queda intacto + **saneamiento de nombres al escribir, vía la capa de ADR-004** | HU-012, HU-010 | P0 | S |
-| HU-017 | CLI `ingest`: carpeta → catálogo + resumen en consola | HU-162, HU-012 | P0 | S |
-| HU-018 | Reporte de inventario del lote (tabla por asset: dims, orientación, flags — formato Maestro §8.2) | HU-017 | P0 | S |
+| HU-017 | Etapa `ingest` (`run ingest`): carpeta → catálogo + resumen en consola | HU-162, HU-012 | P0 | S |
+| HU-018 | Reporte `inventory` (`report inventory`): tabla por asset (dims, orientación, flags — formato Maestro §8.2) | HU-017 | P0 | S |
 | HU-019 | Sidecar de etiquetas manuales (ambiente, descarte, notas) que sobrevive re-ingestas | HU-013 | P1 | M |
 
 ## E2 · Análisis de calidad — foto (HU-020–049)
@@ -91,12 +91,12 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-029 | Score de exposición compuesto (fórmula = datos del perfil) | HU-020–022, HU-160 | P0 | S |
 | HU-030 | Veredicto técnico por asset: publicable / apoyo / descartar, con causas (umbrales del perfil) | HU-029 | P0 | S |
 | HU-031 | `ADR` Estrategia de detección de ambientes sin nube ni entrenamiento (heurística vs modelo local pre-entrenado) | HU-030 | P1 | M |
-| HU-032 | Etiquetado asistido de ambientes vía CLI (propone, humano confirma → sidecar HU-019) | HU-031, HU-019 | P1 | M |
+| HU-032 | Etiquetado asistido de ambientes vía el comando `label` (propone, humano confirma → sidecar HU-019) | HU-031, HU-019 | P1 | M |
 | HU-033 | Cobertura de ambientes del lote vs esperados por el perfil (qué falta grabar) | HU-032, HU-160 | P1 | S |
 | HU-034 | Detección local de rostros/placas → flag PII (no bloquea, informa) | HU-031 | P2 | M |
 | HU-035 | `QualityReport` agregado y serializado al catálogo | HU-030 | P0 | S |
-| HU-036 | Reporte comparativo del lote: tablas ordenadas por score, estrellas y descartes | HU-035 | P0 | S |
-| HU-037 | CLI `analyze`: catálogo → reportes + flags | HU-017, HU-035 | P0 | S |
+| HU-036 | Reporte `analysis` (`report analysis`): tablas ordenadas por score, estrellas y descartes | HU-035 | P0 | S |
+| HU-037 | Etapa `analyze` (`run analyze`): catálogo → reportes + flags | HU-017, HU-035 | P0 | S |
 | HU-038 | Golden test integral de análisis sobre fixtures sintéticos + validación manual vs Maestro §8.2 | HU-037, HU-164 | P0 | M |
 
 ## E3 · Revelado (HU-050–069)
@@ -117,8 +117,8 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-061 | Export JPEG: calidad configurable, metadatos limpios (sin GPS/PII) | HU-060 | P1 | S |
 | HU-062 | Golden tests del revelado calibrados contra el antes/después del 25-jul | HU-056, HU-164 | P1 | M |
 | HU-063 | Presupuesto de rendimiento por foto (benchmark, CPU de referencia) | HU-062, HU-165 | P1 | S |
-| HU-064 | CLI `develop`: lote → directorio de trabajo con revelados | HU-056, HU-037 | P1 | S |
-| HU-065 | Reporte antes/después del lote (brillo medio, % negro — formato Maestro §8.4) | HU-064 | P1 | S |
+| HU-064 | Etapa `develop` (`run develop`): lote → directorio de trabajo con revelados | HU-056, HU-037 | P1 | S |
+| HU-065 | Reporte `develop` (`report develop`): antes/después del lote (brillo medio, % negro — formato Maestro §8.4) | HU-064 | P1 | S |
 
 ## E4 · Ranking y selección (HU-070–099)
 
@@ -132,7 +132,7 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-075 | Detección de near-duplicates para diversidad de la selección | HU-006, HU-070 | P1 | M |
 | HU-076 | Ranking explicable: por qué cada asset quedó dentro/fuera (trazas legibles) | HU-070 | P1 | S |
 | HU-077 | Matching de assets contra un plan de piezas (calendario del perfil: qué pieza queda bloqueada por falta de material) | HU-074 | P2 | M |
-| HU-078 | CLI `select`: catálogo analizado → selección + galería ordenada | HU-072, HU-064 | P1 | S |
+| HU-078 | Etapa `select` (`run select`): catálogo analizado → selección + galería ordenada | HU-072, HU-064 | P1 | S |
 | HU-079 | Golden test de ranking: determinista ante mismo catálogo y perfil | HU-078, HU-164 | P1 | S |
 
 ## E5 · Video y reels (HU-100–129)
@@ -149,7 +149,7 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | HU-107 | Ensamblado del reel con ffmpeg: concatenación + transiciones simples | HU-106 | P2 | M |
 | HU-108 | Normalización de color/exposición entre clips del mismo reel | HU-107, HU-052 | P3 | L |
 | HU-109 | Export 1080×1920: codec, bitrate y perfil de color por plataforma | HU-107 | P2 | S |
-| HU-110 | CLI `reel`: clips → reel 9:16 + reporte de escenas usadas/descartadas | HU-109 | P2 | S |
+| HU-110 | Etapa `reel` (`run reel`): clips → reel 9:16 + reporte de escenas usadas/descartadas | HU-109 | P2 | S |
 | HU-111 | Golden test de reel determinista (mismos clips + perfil ⇒ mismo output) | HU-110, HU-164 | P2 | M |
 | HU-112 | Presupuesto de rendimiento por minuto de material crudo | HU-110, HU-165 | P2 | S |
 
@@ -171,15 +171,15 @@ Derivado del `charter.md` y de los insumos del cliente 0. Toda HU nace de aquí.
 | ID | HU | Depende de | Prio | Est |
 |----|----|-----------|------|-----|
 | HU-180 | Orquestador de etapas: un asset que falla degrada, el lote continúa; resumen de fallos | HU-161, HU-168 | P0 | M |
-| HU-181 | Reporte consolidado del run en Markdown (inventario + análisis + selección) | HU-036, HU-076 | P1 | M |
+| HU-181 | Reporte `run` (`report run`): consolidado en Markdown (inventario + análisis + selección) | HU-036, HU-076 | P1 | M |
 | HU-182 | Reanudación idempotente: re-ejecutar un run no repite trabajo hecho | HU-013, HU-180 | P1 | M |
 | HU-183 | Métricas de run en JSONL (tiempos, memoria, conteos) para auditoría histórica | HU-168 | P1 | S |
-| HU-184 | CLI `run`: pipeline completo ingest→analyze→develop→select con un comando | HU-180, HU-078 | P1 | S |
+| HU-184 | Secuencia `all` (`run all`): pipeline completo ingest→analyze→develop→select con un comando | HU-180, HU-078 | P1 | S |
 | HU-185 | Smoke test E2E con dataset sintético en CI local (< 60 s) | HU-184, HU-166 | P1 | M |
 
 ---
 
-**Total: 111 HUs** · P0: 43 (hito M1) · P1: 41 (M2–M3) · P2: 22 (M4) · P3: 5.
+**Total: 112 HUs** · P0: 48 (hito M1) · P1: 43 (M2–M3) · P2: 19 (M4) · P3: 2.
 
 ## Orden de arranque propuesto (primeras 10)
 

@@ -1,9 +1,9 @@
 # Spec Técnica `HU-162` — `CLI base: entrypoint, versión, contexto y salida de errores`
 
-> **Estado:** ⚠️ **BLOQUEADA** — 1 pregunta bloqueante (P-1, §6)
+> **Estado:** ✅ **LISTA PARA DEV** — P-1 cerrada por decisión de arquitectura (2026-08-06)
 > **Fecha:** 2026-08-06
-> **Confianza global:** 78% — ver sección 9
-> **Diseño detallado:** [`diseno_cli.md`](diseno_cli.md)
+> **Confianza global:** 93% — ver sección 9
+> **Diseño detallado:** [`diseno_cli.md`](diseno_cli.md) · **Decisión:** [`cierre_arquitectura_cli.md`](cierre_arquitectura_cli.md)
 
 ---
 
@@ -105,21 +105,27 @@ Ver [`diseno_cli.md`](diseno_cli.md) §3 y §5. Resumen: un dataclass congelado 
 
 ## 6. Preguntas abiertas
 
-### P-1 — ¿Qué superficie de comandos rige: la pedida o la del backlog?
-- **Categoría:** 🔴 **BLOQUEANTE**
-- **El problema:** los 5 comandos indicados (`scan`, `ingest`, `inventory`, `process`,
-  `report`) no coinciden con los 6 que el backlog reparte en 6 HUs de 4 épicas (`ingest`,
-  `analyze`, `develop`, `select`, `reel`, `run`). La superficie pedida **fusiona dos
-  comandos, convierte dos reportes en comandos, añade uno sin HU y deja tres HUs sin comando
-  donde aterrizar** — entre ellas HU-078 (`select`), que produce la galería ordenada: el
-  entregable de negocio del charter §2.
-- **Por qué bloquea:** esta HU fija el **registro de comandos**. Escribirlo sin saber cuál
-  superficie rige significa que la primera HU de comando lo contradice.
-- **Por qué no lo decido yo:** una opción reescribe el enunciado de 6 HUs de 4 épicas; la
-  otra contradice una instrucción explícita. Ninguna es una elección técnica.
-- **Detalle completo, con la tabla de correspondencias y el impacto de cada opción:**
-  [`diseno_cli.md`](diseno_cli.md) §8.
-- **Estado:** 🔴 ABIERTA — **el gate no puede pasar**
+### P-1 — ¿Qué superficie de comandos rige? — ✅ **CERRADA**
+- **Decisión (2026-08-06):** **tres comandos — `run <etapa>`, `report <tipo>`, `label`.**
+  Las etapas y los reportes son entradas de `pipeline/registry.py`, no comandos.
+- **Razón:** ninguna de las dos superficies en discusión resolvía el defecto que la
+  auditoría encontró — 6 HUs escritas como "reportes" sin decir cómo se invocan y 2 de
+  corrección humana sin comando. Ambas derivaban los comandos de las etapas, y esas 8 HUs no
+  son etapas. La decisión aplica a las etapas el principio que el charter §3 ya fijó para
+  los perfiles.
+- **Efecto sobre esta HU:** el registro de comandos es fijo y pequeño; lo que crece es el
+  registro de `pipeline/`, que esta HU consume pero no define.
+- **Sustento:** [`cierre_arquitectura_cli.md`](cierre_arquitectura_cli.md) §1 · migración
+  ejecutada sobre 4 archivos, 0 cambios de alcance.
+
+### P-3 — ¿Qué hace `run <etapa>` mientras el registro no tenga ejecutores?
+- **Categoría:** INFORMATIVA
+- **Mi mejor hipótesis:** el registro declara la superficie completa desde el primer día
+  (las 6 etapas y los 7 reportes ya están decididos), y cada entrada gana su ejecutor con su
+  HU. Invocar una etapa sin ejecutor da un mensaje claro y sale con `FAILURE`. La
+  alternativa —registro vacío que se va llenando— dejaría `run --help` mintiendo sobre lo
+  que la herramienta va a poder hacer.
+- **Estado:** ABIERTA (no bloquea)
 
 ### P-2 — ¿`--workspace` y `--profile` globales o por comando?
 - **Categoría:** INFORMATIVA
@@ -153,19 +159,17 @@ Ver [`diseno_cli.md`](diseno_cli.md) §3 y §5. Resumen: un dataclass congelado 
 
 ## 9. Confianza global
 
-- **Preguntas abiertas:** 2 — **1 BLOQUEANTE**
+- **Preguntas abiertas:** 2 — **0 bloqueantes** (P-1 cerrada por decisión de arquitectura)
 - **Verificaciones cruzadas:**
   - [x] ADR-005 aceptado, con la medición reproducible archivada
   - [x] `core/errors.py` leído: la jerarquía mapea a códigos de salida sin inventar nada
   - [x] `logs.configure_logging` leído: sus parámetros son los de `--log-level`/`--log-file`
-  - [x] Superficie de comandos contrastada **una por una** contra las 6 HUs del backlog
+  - [x] **Las 112 HUs auditadas una por una**; ninguna queda sin mecanismo de ejecución
+  - [x] Superficie aprobada y migrada al backlog, la arquitectura y la documentación
   - [x] `pyproject.toml` leído: no hay `[project.scripts]`
-- **Recomendación:** ⛔ **NO PASA EL GATE.** Confianza 78%, por debajo del 85% exigido, y
-  con una pregunta bloqueante. **El gate no se fuerza**: bastaría con "elegir yo la
-  superficie" para subir el número, y eso sería exactamente inflar la confianza para cumplir
-  un umbral.
-- **Qué falta:** una sola decisión, la de P-1. Con ella resuelta, la confianza sube a ~92% y
-  la implementación arranca sin más.
+- **Recomendación:** ✅ **LISTA PARA DEV.**
+- **Confianza: 93%.** El 7% restante son P-3 (informativa) y R-1, que es el riesgo que la
+  propia HU mitiga con el test de sincronía.
 
 ---
 

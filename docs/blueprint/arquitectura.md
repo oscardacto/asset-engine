@@ -30,9 +30,16 @@ Las flechas se leen **"depende de"**. No hay ninguna flecha que suba.
                       ┌──────────────────────────────┐
                       │  cli/                        │  traduce argumentos → contratos
                       │  cli/commands/               │  ÚNICO lugar que importa argparse
-                      └───────────────┬──────────────┘
-                                      │
-                      ┌───────────────▼──────────────┐
+                      │  run · report · label        │  tres capacidades, no una por etapa
+                      └───────┬──────────────┬───────┘
+                              │              │ consulta qué etapas
+                              │              │ y qué reportes existen
+                              │              ▼
+                              │   ┌────────────────────────┐
+                              │   │ pipeline/registry.py   │  las etapas son DATOS
+                              │   └────────────────────────┘
+                              ▼
+                      ┌──────────────────────────────┐
                       │  pipeline/                   │  orquesta etapas, degrada fallos
                       └───────────────┬──────────────┘
                                       │
@@ -68,6 +75,7 @@ Las flechas se leen **"depende de"**. No hay ninguna flecha que suba.
 | A-3 | Todo acceso físico al disco pasa por `ingest/filesystem.py` | `tests/test_arquitectura.py::test_ningun_modulo_de_produccion_toca_el_disco_por_su_cuenta` · ADR-004 |
 | A-4 | **`argparse` solo se importa dentro de `cli/`** | test nuevo (HU-162) |
 | A-5 | Ningún contrato de `core/` expone una colección sin orden | `tests/core/test_determinism.py::TestGuardianDeContratos` · HU-169 |
+| A-6 | **`cli/` no contiene listas de etapas ni de reportes escritas a mano**: se las pide al registro | test nuevo (HU-162) |
 
 Ninguna de estas reglas es una convención escrita: **todas fallan la batería si se violan.**
 
@@ -96,6 +104,29 @@ Fijado por ADR-005. La CLI hace exactamente tres cosas, en este orden:
 
 **Prueba de que la separación es real:** el dominio completo debe poder ejercitarse desde los
 tests sin importar `cli/` ni `argparse` — y así es hoy, con 422 tests y sin CLI existente.
+
+### 3.1 Las etapas son datos, no comandos
+
+La CLI expone **tres capacidades**, no una por etapa del pipeline:
+
+```
+run     <etapa>     ingest · analyze · develop · select · reel · all
+report  <tipo>      inventory · analysis · develop · selection · reel · run · history
+label
+```
+
+`<etapa>` y `<tipo>` son **argumentos posicionales** cuyos valores válidos salen de
+`pipeline/registry.py`. No son subcomandos anidados: toda etapa recibe lo mismo —workspace,
+perfil y opcionalmente un origen— porque **sus parámetros son datos del perfil de negocio**,
+nunca banderas de línea de comandos. Un `--clahe-clip` sería criterio estético fuera del
+perfil, justo el `if` por cliente que el charter §3 prohíbe.
+
+Es la misma regla que el charter fijó para los perfiles, aplicada a las etapas: **una etapa
+no es una capacidad distinta del sistema, es material de trabajo del orquestador.**
+
+**Consecuencia que sostiene la decisión:** añadir una etapa o un reporte es añadir una
+entrada al registro. `cli/` no se toca, y el parser no crece con el producto — que es lo que
+mantiene válida la elección de `argparse` (ADR-005) más allá de su umbral de reapertura.
 
 ---
 
