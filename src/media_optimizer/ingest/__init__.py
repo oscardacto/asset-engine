@@ -40,6 +40,7 @@ from media_optimizer.ingest.hashing import (
     compute_content_hash,
     find_duplicate_groups,
 )
+from media_optimizer.ingest.orientation import AssetOrientation, detect_orientation
 from media_optimizer.ingest.quarantine import (
     QuarantinedAsset,
     QuarantineReason,
@@ -55,6 +56,7 @@ __all__ = [
     "MAX_DECODED_BYTES",
     "MAX_SIDE",
     "SUPPORTED_FORMATS",
+    "AssetOrientation",
     "Catalog",
     "CatalogEntry",
     "DuplicateGroup",
@@ -69,6 +71,7 @@ __all__ = [
     "catalog_from_triage",
     "compute_content_hash",
     "detect_image_format",
+    "detect_orientation",
     "find_duplicate_groups",
     "is_supported_image",
     "load_catalog",
