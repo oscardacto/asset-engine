@@ -4,20 +4,30 @@ En simple: aquí solo se definen estructuras de información — nunca se abren
 archivos, ni se procesa imagen o video.
 """
 
+from media_optimizer.core.business_profile import (
+    BusinessProfile,
+    OutputFormat,
+    OutputIntent,
+    ScoringWeights,
+)
 from media_optimizer.core.errors import CorruptMediaError, InvalidInputError, MediaOptimizerError
 from media_optimizer.core.media_asset import MediaAsset, MediaType, Orientation
 from media_optimizer.core.quality_report import QualityReport, Verdict
 from media_optimizer.core.transform import ParamValue, Transform, TransformHistory
 
 __all__ = [
+    "BusinessProfile",
     "CorruptMediaError",
     "InvalidInputError",
     "MediaAsset",
     "MediaOptimizerError",
     "MediaType",
     "Orientation",
+    "OutputFormat",
+    "OutputIntent",
     "ParamValue",
     "QualityReport",
+    "ScoringWeights",
     "Transform",
     "TransformHistory",
     "Verdict",
