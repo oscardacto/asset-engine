@@ -107,3 +107,5 @@
 {"item":"HU-168","evento":"dev","fecha":"2026-08-06"}
 {"item":"HU-168","evento":"qa","fecha":"2026-08-06","criterios_total":11,"criterios_fallidos":0,"rework":false,"notas":"stage_report.py 100%; separacion medido/reproducible probada en ambas direcciones"}
 {"item":"HU-168","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-156","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":88,"bloqueantes":0,"importantes":1,"informativas":1,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-156","evento":"dev","fecha":"2026-08-06"}
