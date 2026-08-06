@@ -16,6 +16,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from media_optimizer.core import CorruptMediaError
+from media_optimizer.ingest import filesystem
 from media_optimizer.ingest.dimensions import (
     MAX_DECODED_BYTES,
     MAX_SIDE,
@@ -148,7 +149,7 @@ def _gib(size_in_bytes: int) -> str:
 
 def _file_size(path: Path) -> int:
     try:
-        return path.stat().st_size
+        return filesystem.file_size(path)
     except OSError as error:
         raise CorruptMediaError(
             path, f"no se pudo consultar el archivo ({error.strerror})"
@@ -171,8 +172,6 @@ def _webp_declared_size(path: Path) -> int:
 
 def _read_bytes(path: Path, offset: int, count: int | None = None) -> bytes:
     try:
-        with path.open("rb") as archivo:
-            archivo.seek(offset)
-            return archivo.read() if count is None else archivo.read(count)
+        return filesystem.read_bytes(path, offset, count)
     except OSError as error:  # pragma: no cover - carrera: el archivo desaparece a mitad del triaje
         raise CorruptMediaError(path, f"no se pudo leer el archivo ({error.strerror})") from error

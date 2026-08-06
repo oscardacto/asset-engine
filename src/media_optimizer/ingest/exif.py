@@ -20,6 +20,7 @@ from enum import IntEnum
 from pathlib import Path
 from typing import Literal
 
+from media_optimizer.ingest import filesystem
 from media_optimizer.ingest.dimensions import ImageSize, header_bytes_needed
 
 ByteOrder = Literal["little", "big"]
@@ -36,6 +37,12 @@ _TIFF_HEADER_SIZE = 8
 _IFD_ENTRY_SIZE = 12
 _MAX_IFD_ENTRIES = 512
 _TAG_ORIENTATION = 0x0112
+_ORIENTATION_UNSET = 0
+"""Muchas cámaras escriben la etiqueta con valor 0 para decir "sin declarar".
+
+No es un metadato roto: es la ausencia de dato, y se trata igual que si la
+etiqueta no estuviera. Solo los valores fuera de 0-8 indican corrupción real.
+"""
 _TAG_EXIF_POINTER = 0x8769
 _TAG_DATETIME_ORIGINAL = 0x9003
 _DATETIME_FORMAT = "%Y:%m:%d %H:%M:%S"
@@ -72,9 +79,7 @@ class ExifData:
 
 def read_exif(path: Path) -> ExifData:
     """Lee el EXIF de una foto sin lanzar por metadatos inválidos o ausentes."""
-    with path.open("rb") as archivo:
-        cabecera = archivo.read(header_bytes_needed())
-    return read_exif_from_header(cabecera)
+    return read_exif_from_header(filesystem.read_bytes(path, count=header_bytes_needed()))
 
 
 def read_exif_from_header(header: bytes) -> ExifData:
@@ -177,8 +182,11 @@ def _extract_orientation(
     crudo = entries.get(_TAG_ORIENTATION)
     if crudo is None:
         return None, False
+    valor = int.from_bytes(crudo[:2], order)
+    if valor == _ORIENTATION_UNSET:
+        return None, False
     try:
-        return ExifOrientation(int.from_bytes(crudo[:2], order)), False
+        return ExifOrientation(valor), False
     except ValueError:
         return None, True
 

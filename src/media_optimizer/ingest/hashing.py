@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from media_optimizer.core import CorruptMediaError
+from media_optimizer.ingest import filesystem
 
 HASH_ALGORITHM = "sha256"
 """Nombre del algoritmo, para publicarlo junto al hash en el catálogo."""
@@ -42,7 +43,7 @@ def compute_content_hash(path: Path) -> str:
     """
     resumen = hashlib.sha256()
     try:
-        with path.open("rb") as archivo:
+        with filesystem.open_binary(path) as archivo:
             while bloque := archivo.read(_CHUNK_BYTES):
                 resumen.update(bloque)
     except OSError as error:
