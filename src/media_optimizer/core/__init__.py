@@ -13,6 +13,7 @@ from media_optimizer.core.business_profile import (
 from media_optimizer.core.errors import CorruptMediaError, InvalidInputError, MediaOptimizerError
 from media_optimizer.core.media_asset import MediaAsset, MediaType, Orientation
 from media_optimizer.core.quality_report import QualityReport, Verdict
+from media_optimizer.core.stage_report import ReproducibleStageSummary, StageReport
 from media_optimizer.core.transform import ParamValue, Transform, TransformHistory
 
 __all__ = [
@@ -27,7 +28,9 @@ __all__ = [
     "OutputIntent",
     "ParamValue",
     "QualityReport",
+    "ReproducibleStageSummary",
     "ScoringWeights",
+    "StageReport",
     "Transform",
     "TransformHistory",
     "Verdict",
