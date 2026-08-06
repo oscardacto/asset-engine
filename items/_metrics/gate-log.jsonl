@@ -84,3 +84,6 @@
 {"item":"HU-012","evento":"dev","fecha":"2026-07-26"}
 {"item":"HU-012","evento":"qa","fecha":"2026-07-26","criterios_total":11,"criterios_fallidos":0,"rework":false,"notas":"bateria sobre develop fusionado; ingest/ 97%; nace sobre la capa de ADR-004"}
 {"item":"HU-012","evento":"done","fecha":"2026-07-26"}
+{"item":"HU-005","evento":"draft","fecha":"2026-07-26"}
+{"item":"HU-005","evento":"gate_spec","fecha":"2026-07-26","intento":1,"confianza":91,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-005","evento":"dev","fecha":"2026-07-26"}
