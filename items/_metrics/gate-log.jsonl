@@ -111,3 +111,6 @@
 {"item":"HU-156","evento":"dev","fecha":"2026-08-06"}
 {"item":"HU-156","evento":"qa","fecha":"2026-08-06","criterios_total":13,"criterios_fallidos":0,"rework":false,"notas":"logs.py 100%; hallazgo: FileHandler de la stdlib pierde registros en silencio; regla de ADR-004 ampliada"}
 {"item":"HU-156","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-169","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":91,"bloqueantes":0,"importantes":1,"informativas":1,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-169","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-158","evento":"rework","fecha":"2026-08-06","origen":"HU-169","motivo":"flags era frozenset: orden distinto en cada proceso, defecto latente de reproducibilidad","detectado_por":"medicion con 4 semillas de hash"}

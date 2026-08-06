@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from types import MappingProxyType
 
+from media_optimizer.core.determinism import stable_unique
+
 
 class Verdict(StrEnum):
     """Destino técnico de un medio tras su análisis de calidad."""
@@ -28,10 +30,14 @@ class QualityReport:
     reporte no cambia aunque el llamador mute su dict original, y siempre itera
     en el mismo orden. Valores no finitos (NaN/inf), nombres de métrica vacíos o
     flags vacíos fallan de inmediato con ``ValueError``.
+
+    Los flags se guardan ordenados y sin repetir. Un conjunto habría sido el tipo
+    natural, pero se recorre en distinto orden en cada ejecución del programa, y
+    estos flags acaban escritos en un reporte que se compara byte a byte.
     """
 
     metrics: Mapping[str, float] = field(hash=False)
-    flags: frozenset[str]
+    flags: tuple[str, ...]
     verdict: Verdict
 
     def __post_init__(self) -> None:
@@ -50,4 +56,4 @@ class QualityReport:
             if not flag.strip():
                 msg = "los flags no pueden estar vacíos"
                 raise ValueError(msg)
-        object.__setattr__(self, "flags", frozenset(self.flags))
+        object.__setattr__(self, "flags", stable_unique(self.flags))
