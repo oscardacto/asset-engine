@@ -12,9 +12,15 @@ tres verbos fijos y **añadir una etapa es añadir una línea a este archivo**.
 Cada entrada declara qué es y qué hace. El código que la ejecuta llega con su
 propio desarrollo; hasta entonces la etapa aparece en la ayuda y avisa con claridad
 de que todavía no está disponible, en vez de fingir que no existe.
+
+Si una etapa está disponible **no se declara aquí: se deriva** de que exista quien
+la ejecute. Así no puede pasar que la lista diga "disponible" sin que el código
+exista, ni lo contrario.
 """
 
 from dataclasses import dataclass
+
+from media_optimizer.pipeline.stages import available_stages
 
 SECUENCIA_COMPLETA = "all"
 
@@ -25,7 +31,11 @@ class StageEntry:
 
     name: str
     description: str
-    available: bool = False
+
+    @property
+    def available(self) -> bool:
+        """Si ya existe quien la ejecute en esta versión."""
+        return self.name in available_stages()
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,7 +44,11 @@ class ReportEntry:
 
     name: str
     description: str
-    available: bool = False
+
+    @property
+    def available(self) -> bool:
+        """Si ya existe quien lo genere en esta versión."""
+        return False
 
 
 STAGES: tuple[StageEntry, ...] = (
