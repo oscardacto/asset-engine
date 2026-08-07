@@ -138,3 +138,8 @@
 {"item":"HU-020","evento":"done","fecha":"2026-08-06"}
 {"item":"HU-021","evento":"done","fecha":"2026-08-06","nota":"implementada con HU-020; crushed_shadows_ratio con umbral del perfil"}
 {"item":"HU-022","evento":"done","fecha":"2026-08-06","nota":"implementada con HU-020; blown_highlights_ratio con umbral del perfil"}
+{"item":"HU-007","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":89,"bloqueantes":0,"importantes":0,"informativas":0,"resultado":"LISTA_PARA_DEV","nota":"spec conjunta 007+008; senal del enunciado refutada por medicion"}
+{"item":"HU-007","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-007","evento":"qa","fecha":"2026-08-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"notas":"KPI lote real: 16/16 WA detectadas, 0 FP en 86; serie de 43 pendiente de entrega"}
+{"item":"HU-007","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-008","evento":"done","fecha":"2026-08-06","nota":"implementada con HU-007; below_native sobre OutputFormat de HU-160, admite foto girada"}
