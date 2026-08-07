@@ -1,1 +1,1 @@
-SPEC (BLOQUEADA) — 2026-08-06 — @oscardacto
+DONE — 2026-08-06 — @oscardacto
