@@ -12,6 +12,8 @@ docstring no puede disparar un falso positivo.
 import ast
 from pathlib import Path
 
+from media_optimizer.pipeline import report_names, stage_names
+
 RAIZ_PRODUCCION = Path(__file__).resolve().parents[1] / "src" / "media_optimizer"
 MODULO_EXENTO = "filesystem.py"
 _MODULO_CAPA = "filesystem"
@@ -138,9 +140,57 @@ def test_la_capa_de_acceso_existe_y_esta_exenta() -> None:
     assert (RAIZ_PRODUCCION / "ingest" / MODULO_EXENTO).is_file()
 
 
+def _importa(archivo: Path) -> set[str]:
+    arbol = ast.parse(archivo.read_text(encoding="utf-8"), filename=str(archivo))
+    nombres: set[str] = set()
+    for nodo in ast.walk(arbol):
+        if isinstance(nodo, ast.Import):
+            nombres |= {alias.name for alias in nodo.names}
+        elif isinstance(nodo, ast.ImportFrom):
+            nombres.add(nodo.module or "")
+    return nombres
+
+
+def test_el_parseo_de_argumentos_vive_solo_en_la_capa_de_linea_de_comandos() -> None:
+    """`argparse` fuera de `cli/` significaría que el dominio conoce la interfaz."""
+    infractores = [
+        str(archivo.relative_to(RAIZ_PRODUCCION))
+        for archivo in _modulos_de_produccion()
+        if archivo.parent.name != "cli"
+        and archivo.parent.parent.name != "cli"
+        and "argparse" in _importa(archivo)
+    ]
+    assert not infractores, f"módulos fuera de cli/ que importan argparse: {infractores}"
+
+
+def test_la_linea_de_comandos_no_lleva_listas_de_etapas_escritas_a_mano() -> None:
+    """Las etapas son datos del registro; escribirlas aquí haría crecer la CLI con el pipeline.
+
+    Busca **colecciones literales** dentro de `cli/` que contengan nombres del
+    registro. Mira la colección y no el texto suelto a propósito: el nombre de un
+    comando puede coincidir con el de un reporte —ambos se llaman ``run``— y eso es
+    legítimo; lo que no lo es es una lista de nombres copiada del registro.
+    """
+    del_registro = set(stage_names()) | set(report_names())
+    infractores: list[str] = []
+    for archivo in sorted((RAIZ_PRODUCCION / "cli").rglob("*.py")):
+        arbol = ast.parse(archivo.read_text(encoding="utf-8"), filename=str(archivo))
+        for nodo in ast.walk(arbol):
+            if not isinstance(nodo, ast.List | ast.Tuple | ast.Set):
+                continue
+            copiados = {
+                elemento.value
+                for elemento in nodo.elts
+                if isinstance(elemento, ast.Constant) and isinstance(elemento.value, str)
+            } & del_registro
+            if copiados:
+                infractores.append(f"{archivo.name}:{nodo.lineno} -> {sorted(copiados)}")
+    assert not infractores, f"nombres del registro copiados a mano en cli/: {infractores}"
+
+
 def test_el_dominio_puro_no_importa_nada_de_infraestructura() -> None:
     """`core/` no puede depender de la capa de acceso ni de librerías de IO."""
-    prohibidos = {"os", "shutil", "cv2", "numpy", "media_optimizer.ingest"}
+    prohibidos = {"os", "shutil", "cv2", "numpy", "argparse", "media_optimizer.ingest"}
     for archivo in sorted((RAIZ_PRODUCCION / "core").rglob("*.py")):
         arbol = ast.parse(archivo.read_text(encoding="utf-8"), filename=str(archivo))
         for nodo in ast.walk(arbol):
