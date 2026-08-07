@@ -10,28 +10,50 @@ escribe el catálogo en el directorio de trabajo. Al final **comprueba** —no
 promete— que los archivos originales quedaron byte a byte como estaban.
 """
 
+import json
 import time
 import tracemalloc
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from media_optimizer.core import InvalidInputError, MediaOptimizerError, StageReport
+from media_optimizer.core import (
+    CorruptMediaError,
+    InvalidInputError,
+    MediaOptimizerError,
+    OutputFormat,
+    OutputIntent,
+    QualityReport,
+    StageReport,
+    Verdict,
+)
 from media_optimizer.ingest import (
+    CatalogEntry,
     DuplicateGroup,
     TriageResult,
+    below_native,
     catalog_from_triage,
     compute_content_hash,
     detect_image_format,
+    filesystem,
     find_duplicate_groups,
+    load_catalog,
     oriented_size,
     read_exif,
     read_image_size_from_path,
     save_catalog,
     scan_input_folder,
     triage_media,
+    whatsapp_compression,
 )
 from media_optimizer.logs import get_logger
+from media_optimizer.photo import ExposureThresholds, exposure_score, verdict_for
+from media_optimizer.vision import (
+    blown_highlights_ratio,
+    crushed_shadows_ratio,
+    decode_image,
+    mean_brightness,
+)
 from media_optimizer.workspace import SourceFingerprint, Workspace, find_modified_sources
 
 
@@ -169,3 +191,104 @@ def _resumen(
 _EJECUTORES: dict[str, Callable[[StageRequest], tuple[tuple[str, ...], bool]]] = {
     "ingest": _ingest,
 }
+
+
+# --- etapa analyze -----------------------------------------------------------
+
+ANALYSIS_FILENAME = "analysis.json"
+ANALYSIS_VERSION = 1
+
+# Criterio del cliente 0 mientras llega la carga de perfiles desde archivo.
+# TODO(HU-131): estos valores pasan al perfil `hospedaje` y se cargan de datos.
+_UMBRALES_EXPOSICION = ExposureThresholds(
+    brightness_target=128.0,
+    crushed_shadows_weight=1.0,
+    blown_highlights_weight=1.5,
+    publishable_min_score=0.75,
+    support_min_score=0.45,
+)
+_UMBRAL_NEGRO = 26.0
+_UMBRAL_QUEMADO = 250.0
+_FORMATOS_SALIDA = (
+    OutputFormat(intent=OutputIntent.COVER, width=1920, height=1080),
+    OutputFormat(intent=OutputIntent.FEED, width=1080, height=1350),
+    OutputFormat(intent=OutputIntent.STORY, width=1080, height=1920),
+)
+
+
+def _analyze(request: StageRequest) -> tuple[tuple[str, ...], bool]:
+    """Catálogo → análisis de calidad por foto, escrito junto al catálogo."""
+    inventario = load_catalog(request.workspace)
+    analisis: dict[str, dict[str, object]] = {}
+    conteo = {Verdict.PUBLISHABLE: 0, Verdict.SUPPORT: 0, Verdict.DISCARD: 0}
+    ilegibles = 0
+    for entrada in inventario.entries:
+        resultado = _analizar_asset(inventario.root, entrada)
+        if resultado is None:
+            ilegibles += 1
+            continue
+        analisis[entrada.content_hash] = resultado
+        conteo[Verdict(str(resultado["verdict"]))] += 1
+
+    documento = {"version": ANALYSIS_VERSION, "assets": analisis}
+    texto = json.dumps(documento, indent=2, sort_keys=True, ensure_ascii=False)
+    destino = request.workspace / ANALYSIS_FILENAME
+    filesystem.write_bytes(destino, (texto + "\n").encode("utf-8"))
+
+    resumen = (
+        f"Fotos analizadas: {len(analisis)}",
+        f"  publicables: {conteo[Verdict.PUBLISHABLE]}",
+        f"  de apoyo: {conteo[Verdict.SUPPORT]}",
+        f"  para descartar: {conteo[Verdict.DISCARD]}",
+        *((f"  ilegibles al decodificar: {ilegibles}",) if ilegibles else ()),
+        f"Análisis escrito en: {destino}",
+    )
+    return resumen, ilegibles > 0
+
+
+def _analizar_asset(root: Path, entrada: CatalogEntry) -> dict[str, object] | None:
+    """Mide, califica y da veredicto a una foto; ``None`` si no se pudo decodificar."""
+    ruta = root / entrada.source
+    try:
+        imagen = decode_image(ruta)
+    except CorruptMediaError:
+        return None
+
+    brillo = mean_brightness(imagen)
+    negro = crushed_shadows_ratio(imagen, _UMBRAL_NEGRO)
+    quemado = blown_highlights_ratio(imagen, _UMBRAL_QUEMADO)
+
+    exif = read_exif(ruta)
+    flags: list[str] = []
+    if whatsapp_compression(
+        entrada.source,
+        filesystem.file_size(ruta),
+        entrada.width * entrada.height,
+        exif.is_present,
+    ):
+        flags.append("whatsapp_compressed")
+    cortas = below_native(entrada.width, entrada.height, _FORMATOS_SALIDA)
+    flags.extend(f"below_native_{intencion.value}" for intencion in cortas)
+
+    score = exposure_score(brillo, negro, quemado, _UMBRALES_EXPOSICION)
+    veredicto, causas = verdict_for(score, tuple(flags), _UMBRALES_EXPOSICION)
+
+    reporte = QualityReport(
+        metrics={
+            "mean_brightness": round(brillo, 2),
+            "crushed_shadows_ratio": round(negro, 4),
+            "blown_highlights_ratio": round(quemado, 4),
+            "exposure_score": round(score, 4),
+        },
+        flags=tuple(flags),
+        verdict=veredicto,
+    )
+    return {
+        "metrics": dict(reporte.metrics),
+        "flags": list(reporte.flags),
+        "verdict": reporte.verdict.value,
+        "causes": list(causas),
+    }
+
+
+_EJECUTORES["analyze"] = _analyze
