@@ -123,3 +123,8 @@
 {"item":"HU-162","evento":"dev","fecha":"2026-08-06"}
 {"item":"HU-162","evento":"qa","fecha":"2026-08-06","criterios_total":13,"criterios_fallidos":0,"rework":false,"notas":"cli/ y pipeline/ al 100%; guardian de sincronia parser-contrato verificado por inyeccion; CLI verificada en terminal"}
 {"item":"HU-162","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-017","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":92,"bloqueantes":0,"importantes":0,"informativas":1,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-017","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-162","evento":"rework","fecha":"2026-08-06","origen":"HU-017","motivo":"report.py duplicaba el nombre del catalogo (catalogo.json vs catalog.json); el reporte nunca lo habria encontrado","detectado_por":"primer test E2E que cruzo cli y pipeline"}
+{"item":"HU-017","evento":"qa","fecha":"2026-08-06","criterios_total":10,"criterios_fallidos":0,"rework":false,"notas":"stages.py 95%; validado con lote real: 109 archivos, 102 aceptados, salida PARTIAL correcta"}
+{"item":"HU-017","evento":"done","fecha":"2026-08-06"}

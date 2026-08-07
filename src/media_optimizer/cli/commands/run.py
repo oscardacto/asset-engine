@@ -15,6 +15,7 @@ from media_optimizer.cli.context import RunContext
 from media_optimizer.cli.exit_codes import ExitCode
 from media_optimizer.logs import get_logger
 from media_optimizer.pipeline import find_stage, stage_names
+from media_optimizer.pipeline.stages import StageRequest, execute_stage
 
 DESTINOS = ("stage", "source", "force", "resume")
 
@@ -68,7 +69,7 @@ def parse(namespace: argparse.Namespace) -> RunArgs:
 
 
 def execute(namespace: argparse.Namespace, context: RunContext, console: Console) -> ExitCode:
-    """Ejecuta la etapa pedida."""
+    """Ejecuta la etapa pedida y muestra su resumen."""
     args = parse(namespace)
     etapa = find_stage(args.stage)
     if etapa is None or not etapa.available:
@@ -81,5 +82,10 @@ def execute(namespace: argparse.Namespace, context: RunContext, console: Console
         )
         return ExitCode.FAILURE
 
-    console.say(f"Ejecutando '{args.stage}'…")
-    return ExitCode.OK
+    peticion = StageRequest(
+        workspace=context.workspace, profile=context.profile, source=args.source
+    )
+    resultado = execute_stage(args.stage, peticion)
+    for linea in resultado.summary:
+        console.say(linea)
+    return ExitCode.PARTIAL if resultado.partial else ExitCode.OK

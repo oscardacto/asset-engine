@@ -13,11 +13,10 @@ from media_optimizer.cli.console import Console
 from media_optimizer.cli.context import RunContext
 from media_optimizer.cli.exit_codes import ExitCode
 from media_optimizer.core.errors import InvalidInputError
-from media_optimizer.ingest import filesystem
+from media_optimizer.ingest import CATALOG_FILENAME, filesystem
 from media_optimizer.pipeline import find_report, report_names
 
 DESTINOS = ("kind", "output_format")
-CATALOGO = "catalogo.json"
 
 
 class OutputFormat(StrEnum):
@@ -63,7 +62,7 @@ def parse(namespace: argparse.Namespace) -> ReportArgs:
 def execute(namespace: argparse.Namespace, context: RunContext, console: Console) -> ExitCode:
     """Muestra el reporte pedido, si el trabajo que lo produce ya se hizo."""
     args = parse(namespace)
-    if not filesystem.exists(context.workspace / CATALOGO):
+    if not filesystem.exists(context.workspace / CATALOG_FILENAME):
         msg = (
             f"No hay nada que reportar en '{context.workspace}': "
             "todavía no se ha ejecutado la ingesta.\n"

@@ -17,9 +17,6 @@ import pytest
 from media_optimizer.cli import ExitCode
 from media_optimizer.cli import main as cli_main
 from media_optimizer.cli.commands import COMMANDS, Command
-from media_optimizer.cli.commands import report as modulo_report
-from media_optimizer.cli.commands import run as modulo_run
-from media_optimizer.cli.commands.report import CATALOGO
 from media_optimizer.cli.console import Console
 from media_optimizer.cli.context import (
     NIVEL_POR_DEFECTO,
@@ -30,8 +27,9 @@ from media_optimizer.cli.context import (
 from media_optimizer.cli.errors import translate
 from media_optimizer.cli.main import build_parser, main
 from media_optimizer.core.errors import CorruptMediaError, InvalidInputError, MediaOptimizerError
-from media_optimizer.ingest import filesystem
-from media_optimizer.pipeline import ReportEntry, StageEntry, report_names, stage_names
+from media_optimizer.ingest import CATALOG_FILENAME, filesystem
+from media_optimizer.pipeline import report_names, stage_names
+from media_optimizer.testing import encode_jpeg, not_an_image, textured_image
 
 _ACCIONES_INTERNAS = frozenset({"help", "version", "command"})
 
@@ -120,7 +118,10 @@ class TestContextoGlobal:
 
 class TestCodigosDeSalida:
     def test_una_etapa_todavia_no_disponible_sale_con_fallo(self) -> None:
-        assert main(["run", "ingest"]) == ExitCode.FAILURE
+        assert main(["run", "analyze"]) == ExitCode.FAILURE
+
+    def test_la_ingesta_sin_carpeta_sale_con_entrada_invalida(self, tmp_path: Path) -> None:
+        assert main(["--workspace", str(tmp_path), "run", "ingest"]) == ExitCode.INVALID_INPUT
 
     def test_pedir_un_reporte_sin_haber_ingerido_sale_con_entrada_invalida(
         self, tmp_path: Path
@@ -196,33 +197,47 @@ class TestLaSuperficieSaleDelRegistro:
             assert etapa in ayuda
 
 
-class TestCuandoLaEtapaYaEsteDisponible:
-    """El camino de éxito existe hoy aunque ninguna etapa lo alcance todavía.
+class TestLaIngestaDePuntaAPunta:
+    """El flujo real del usuario: de la terminal al catálogo, sin atajos."""
 
-    Sin estas pruebas, el despacho quedaría sin ejercitar hasta la primera etapa
-    real, y un fallo ahí aparecería mezclado con el trabajo de esa otra HU.
-    """
+    def test_un_lote_limpio_sale_con_cero_y_deja_catalogo(self, tmp_path: Path) -> None:
+        lote = tmp_path / "lote"
+        lote.mkdir()
+        (lote / "foto.jpg").write_bytes(encode_jpeg(textured_image(64, 48, 100, seed=7)))
 
-    def test_una_etapa_disponible_se_ejecuta_y_sale_con_cero(
-        self, monkeypatch: pytest.MonkeyPatch
+        codigo = main(["--workspace", str(tmp_path / "salidas"), "run", "ingest", str(lote)])
+
+        assert codigo == ExitCode.OK
+        assert filesystem.exists(tmp_path / "salidas" / CATALOG_FILENAME)
+
+    def test_un_lote_con_fotos_rotas_sale_parcial(self, tmp_path: Path) -> None:
+        lote = tmp_path / "lote"
+        lote.mkdir()
+        (lote / "buena.jpg").write_bytes(encode_jpeg(textured_image(64, 48, 100, seed=7)))
+        (lote / "rota.jpg").write_bytes(not_an_image())
+
+        codigo = main(["--workspace", str(tmp_path / "salidas"), "run", "ingest", str(lote)])
+
+        assert codigo == ExitCode.PARTIAL
+
+    def test_el_resumen_llega_a_la_consola(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
-        lista = StageEntry("ingest", "Lee la carpeta.", available=True)
-        monkeypatch.setattr(modulo_run, "find_stage", lambda _nombre: lista)
-        assert main(["run", "ingest"]) == ExitCode.OK
+        lote = tmp_path / "lote"
+        lote.mkdir()
+        (lote / "foto.jpg").write_bytes(encode_jpeg(textured_image(64, 48, 100, seed=7)))
 
-    def test_un_reporte_disponible_se_muestra(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        filesystem.write_bytes(tmp_path / CATALOGO, b"{}")
-        listo = ReportEntry("inventory", "Qué hay en el lote.", available=True)
-        monkeypatch.setattr(modulo_report, "find_report", lambda _nombre: listo)
-        assert main(["--workspace", str(tmp_path), "report", "inventory"]) == ExitCode.OK
+        main(["--workspace", str(tmp_path / "salidas"), "run", "ingest", str(lote)])
+
+        salida = capsys.readouterr().out
+        assert "Archivos encontrados: 1" in salida
+        assert "Aceptados al catálogo: 1" in salida
 
     def test_un_reporte_aun_no_disponible_sale_con_fallo_no_con_entrada_invalida(
         self, tmp_path: Path
     ) -> None:
         """Ya hay catálogo: el problema es el reporte, no lo que el usuario escribió."""
-        filesystem.write_bytes(tmp_path / CATALOGO, b"{}")
+        filesystem.write_bytes(tmp_path / CATALOG_FILENAME, b"{}")
         assert main(["--workspace", str(tmp_path), "report", "inventory"]) == ExitCode.FAILURE
 
 
@@ -257,7 +272,7 @@ class TestCapaSecundaria:
 
         main(["--workspace", str(tmp_path), "--log-file", str(destino), "run", "ingest"])
 
-        assert b"etapa no disponible" in filesystem.read_bytes(destino)
+        assert b"carpeta de origen" in filesystem.read_bytes(destino)
 
     def test_los_tres_comandos_estan_registrados_y_sin_repetir(self) -> None:
         nombres = [comando.name for comando in COMMANDS]
