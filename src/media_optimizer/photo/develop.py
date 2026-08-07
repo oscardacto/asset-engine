@@ -145,3 +145,95 @@ TRANSFORMS: dict[str, TransformSpec] = {
     "white_balance": TransformSpec(apply=_aplicar_wb, validate=_validar_wb),
     "saturation": TransformSpec(apply=_aplicar_saturation, validate=_validar_saturation),
 }
+
+
+# --- shadows: levantar lo oscuro sin lavar lo claro -------------------------
+
+
+def _validar_shadows(params: Mapping[str, ParamValue]) -> None:
+    _requerir(params, "amount", 0.0, 1.0)
+
+
+def _aplicar_shadows(image: Image, params: Mapping[str, ParamValue]) -> Image:
+    """Recupera las sombras con una máscara que pesa lo oscuro y respeta lo claro.
+
+    La ganancia entra al cuadrado de la oscuridad local: mucha en el negro,
+    casi nada en los medios, cero en las luces — así el interior oscuro del
+    apartamento sube sin que la ventana se lave.
+    """
+    cantidad = _requerir(params, "amount", 0.0, 1.0)
+    oscuridad = 1.0 - (luminance(image).astype(np.float32) / _NIVEL_MAXIMO)
+    mascara = (oscuridad * oscuridad)[:, :, np.newaxis]
+    flotante = image.astype(np.float32)
+    levantada = flotante + cantidad * _NIVEL_MAXIMO * mascara * (flotante / _NIVEL_MAXIMO + 0.1)
+    return np.clip(levantada, 0, _NIVEL_MAXIMO).astype(np.uint8)
+
+
+# --- exposure: hacia el objetivo, protegiendo las altas luces ---------------
+
+
+def _validar_exposure(params: Mapping[str, ParamValue]) -> None:
+    _requerir(params, "target_brightness", 1.0, 254.0)
+
+
+def _aplicar_exposure(image: Image, params: Mapping[str, ParamValue]) -> Image:
+    """Acerca el brillo medio al objetivo del negocio sin quemar lo ya luminoso.
+
+    La ganancia se pondera por cuánta luz falta en cada zona: donde ya hay luz
+    casi no entra, así una subida de exposición no revienta la ventana.
+    """
+    objetivo = _requerir(params, "target_brightness", 1.0, 254.0)
+    mapa = luminance(image).astype(np.float32)
+    actual = float(mapa.mean())
+    if actual <= 0:
+        return image.copy()
+    ganancia = objetivo / actual
+    if ganancia >= 1.0:
+        margen = (1.0 - mapa / _NIVEL_MAXIMO)[:, :, np.newaxis]
+        factor = 1.0 + (ganancia - 1.0) * margen
+    else:
+        factor = np.full((*mapa.shape, 1), ganancia, dtype=np.float32)
+    salida = image.astype(np.float32) * factor
+    return np.clip(salida, 0, _NIVEL_MAXIMO).astype(np.uint8)
+
+
+# --- crop: recorte centrado al aspecto pedido -------------------------------
+
+
+def _validar_crop(params: Mapping[str, ParamValue]) -> None:
+    _requerir(params, "aspect_width", 1, 32)
+    _requerir(params, "aspect_height", 1, 32)
+
+
+def _aplicar_crop(image: Image, params: Mapping[str, ParamValue]) -> Image:
+    """Recorta centrado al aspecto pedido, tocando solo el eje que sobra."""
+    aspecto = _requerir(params, "aspect_width", 1, 32) / _requerir(params, "aspect_height", 1, 32)
+    alto, ancho = image.shape[:2]
+    if ancho / alto > aspecto:
+        nuevo_ancho = round(alto * aspecto)
+        margen = (ancho - nuevo_ancho) // 2
+        return image[:, margen : margen + nuevo_ancho].copy()
+    nuevo_alto = round(ancho / aspecto)
+    margen = (alto - nuevo_alto) // 2
+    return image[margen : margen + nuevo_alto, :].copy()
+
+
+# --- resize: al nativo de plataforma, con resampling de calidad -------------
+
+
+def _validar_resize(params: Mapping[str, ParamValue]) -> None:
+    _requerir(params, "width", 16, 8192)
+    _requerir(params, "height", 16, 8192)
+
+
+def _aplicar_resize(image: Image, params: Mapping[str, ParamValue]) -> Image:
+    """Redimensiona a las medidas exactas con el filtro de reducción fotográfico."""
+    ancho = int(_requerir(params, "width", 16, 8192))
+    alto = int(_requerir(params, "height", 16, 8192))
+    return cv2.resize(image, (ancho, alto), interpolation=cv2.INTER_AREA)
+
+
+TRANSFORMS["shadows"] = TransformSpec(apply=_aplicar_shadows, validate=_validar_shadows)
+TRANSFORMS["exposure"] = TransformSpec(apply=_aplicar_exposure, validate=_validar_exposure)
+TRANSFORMS["crop"] = TransformSpec(apply=_aplicar_crop, validate=_validar_crop)
+TRANSFORMS["resize"] = TransformSpec(apply=_aplicar_resize, validate=_validar_resize)

@@ -158,3 +158,10 @@
 {"item":"HU-051","evento":"done","fecha":"2026-08-06"}
 {"item":"HU-052","evento":"done","fecha":"2026-08-06","nota":"white_balance calidez en luces, test de asimetria"}
 {"item":"HU-055","evento":"done","fecha":"2026-08-06","nota":"saturation con tope del perfil validado en el plan"}
+{"item":"HU-053","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":90,"bloqueantes":0,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-053","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-053","evento":"qa","fecha":"2026-08-06","criterios_total":6,"criterios_fallidos":0,"rework":false}
+{"item":"HU-053","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-054","evento":"done","fecha":"2026-08-06","nota":"exposure hacia objetivo con proteccion de altas luces"}
+{"item":"HU-058","evento":"done","fecha":"2026-08-06","nota":"crop centrado conservador"}
+{"item":"HU-060","evento":"done","fecha":"2026-08-06","nota":"resize INTER_AREA"}

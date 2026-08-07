@@ -113,3 +113,67 @@ class TestCapaSecundaria:
         salida, historial = apply_pipeline(_FOTO, ())
         assert np.array_equal(salida, _FOTO)
         assert len(historial) == 0
+
+
+class TestShadows:
+    def test_sube_las_sombras_mas_que_las_luces(self) -> None:
+        mitad = np.zeros((20, 20, 3), dtype=np.uint8)
+        mitad[:10] = 30
+        mitad[10:] = 220
+        paso = Transform(name="shadows", params={"amount": 0.5})
+        salida, _ = apply_pipeline(mitad, (paso,))
+        subida_sombras = float(salida[:10].mean()) - 30
+        subida_luces = float(salida[10:].mean()) - 220
+        assert subida_sombras > 5
+        assert subida_sombras > subida_luces >= 0
+
+    def test_amount_cero_no_cambia_nada(self) -> None:
+        paso = Transform(name="shadows", params={"amount": 0.0})
+        salida, _ = apply_pipeline(_FOTO, (paso,))
+        assert np.array_equal(salida, _FOTO)
+
+
+class TestExposure:
+    def test_acerca_el_brillo_al_objetivo(self) -> None:
+        oscura = textured_image(48, 48, 60, seed=3)
+        paso = Transform(name="exposure", params={"target_brightness": 128})
+        salida, _ = apply_pipeline(oscura, (paso,))
+        assert abs(mean_brightness(salida) - 128) < abs(mean_brightness(oscura) - 128)
+
+    def test_una_foto_ya_en_objetivo_queda_casi_igual(self) -> None:
+        justa = textured_image(48, 48, 128, seed=4)
+        paso = Transform(name="exposure", params={"target_brightness": 128})
+        salida, _ = apply_pipeline(justa, (paso,))
+        assert abs(mean_brightness(salida) - mean_brightness(justa)) < 3
+
+    def test_las_altas_luces_no_se_queman_al_subir(self) -> None:
+        mitad = np.zeros((20, 20, 3), dtype=np.uint8)
+        mitad[:10] = 40
+        mitad[10:] = 250
+        paso = Transform(name="exposure", params={"target_brightness": 150})
+        salida, _ = apply_pipeline(mitad, (paso,))
+        assert float(salida[10:].mean()) <= 255
+        assert float(salida[10:].mean()) - 250 < 5
+
+
+class TestCrop:
+    def test_produce_el_aspecto_exacto_centrado(self) -> None:
+        imagen = textured_image(100, 60, 100, seed=5)
+        paso = Transform(name="crop", params={"aspect_width": 4, "aspect_height": 5})
+        salida, _ = apply_pipeline(imagen, (paso,))
+        alto, ancho = salida.shape[:2]
+        assert ancho / alto == pytest.approx(0.8, abs=0.02)
+        assert alto == 60  # solo se recorta el eje sobrante
+
+    def test_no_escala_solo_recorta(self) -> None:
+        imagen = textured_image(80, 100, 100, seed=6)  # ya es 4:5
+        paso = Transform(name="crop", params={"aspect_width": 4, "aspect_height": 5})
+        salida, _ = apply_pipeline(imagen, (paso,))
+        assert np.array_equal(salida, imagen)
+
+
+class TestResize:
+    def test_respeta_las_medidas_exactas(self) -> None:
+        paso = Transform(name="resize", params={"width": 24, "height": 30})
+        salida, _ = apply_pipeline(_FOTO, (paso,))
+        assert salida.shape == (30, 24, 3)
