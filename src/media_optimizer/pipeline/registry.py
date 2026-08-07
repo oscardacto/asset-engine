@@ -20,6 +20,7 @@ exista, ni lo contrario.
 
 from dataclasses import dataclass
 
+from media_optimizer.pipeline.reports import available_reports
 from media_optimizer.pipeline.stages import available_stages
 
 SECUENCIA_COMPLETA = "all"
@@ -48,7 +49,7 @@ class ReportEntry:
     @property
     def available(self) -> bool:
         """Si ya existe quien lo genere en esta versión."""
-        return False
+        return self.name in available_reports()
 
 
 STAGES: tuple[StageEntry, ...] = (
