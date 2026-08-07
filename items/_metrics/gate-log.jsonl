@@ -121,3 +121,5 @@
 {"item":"HU-162","evento":"decision_arquitectura","fecha":"2026-08-06","decision":"superficie CLI de 3 comandos (run/report/label); etapas y reportes como datos del registro de pipeline","hus_auditadas":112,"inconsistencias_detectadas":15,"inconsistencias_corregidas":10,"hus_nuevas":0,"divisiones":0,"fusiones":0,"cambios_de_alcance":0}
 {"item":"HU-162","evento":"gate_spec","fecha":"2026-08-06","intento":2,"confianza":93,"bloqueantes":0,"importantes":0,"informativas":2,"resultado":"LISTA_PARA_DEV"}
 {"item":"HU-162","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-162","evento":"qa","fecha":"2026-08-06","criterios_total":13,"criterios_fallidos":0,"rework":false,"notas":"cli/ y pipeline/ al 100%; guardian de sincronia parser-contrato verificado por inyeccion; CLI verificada en terminal"}
+{"item":"HU-162","evento":"done","fecha":"2026-08-06"}
