@@ -106,7 +106,7 @@ class TestDisponibilidadDerivada:
         entrada = find_report("inventory")
         assert entrada is not None
         assert entrada.available is True
-        assert available_reports() == frozenset({"inventory", "analysis"})
+        assert available_reports() == frozenset({"inventory", "analysis", "develop"})
 
 
 class TestCapaSecundaria:

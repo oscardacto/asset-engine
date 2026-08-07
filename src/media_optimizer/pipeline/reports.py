@@ -196,3 +196,43 @@ def _analysis(request: ReportRequest) -> str:
 
 
 _GENERADORES["analysis"] = _analysis
+
+
+def _develop_report(request: ReportRequest) -> str:
+    """Antes/después del lote: cuánto movió el revelado a cada foto."""
+    destino = request.workspace / "develop.json"
+    if not filesystem.exists(destino):
+        msg = (
+            f"no hay revelado en '{request.workspace}': "
+            "ejecuta primero: media-optimizer run develop"
+        )
+        raise InvalidInputError(msg)
+    datos = json.loads(filesystem.read_bytes(destino).decode("utf-8"))
+    filas = sorted(
+        (str(ficha["output"]), float(ficha["brightness_before"]), float(ficha["brightness_after"]))
+        for ficha in datos["assets"].values()
+    )
+    pasos = " → ".join(str(paso["name"]) for paso in datos["plan"])
+    if request.output_format == _MARKDOWN:
+        lineas = [
+            "# Revelado del lote",
+            "",
+            f"Plan aplicado: {pasos}",
+            "",
+            "| Salida | Brillo antes | Brillo después | Δ |",
+            "|--------|-------------:|---------------:|---:|",
+        ]
+        lineas.extend(
+            f"| {nombre} | {antes:.0f} | {despues:.0f} | {despues - antes:+.0f} |"
+            for nombre, antes, despues in filas
+        )
+    else:
+        lineas = ["REVELADO DEL LOTE", f"Plan: {pasos}", ""]
+        lineas.extend(
+            f"{antes:6.1f} -> {despues:6.1f}  ({despues - antes:+5.1f})  {nombre}"
+            for nombre, antes, despues in filas
+        )
+    return "\n".join(lineas) + "\n"
+
+
+_GENERADORES["develop"] = _develop_report

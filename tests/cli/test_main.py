@@ -118,7 +118,7 @@ class TestContextoGlobal:
 
 class TestCodigosDeSalida:
     def test_una_etapa_todavia_no_disponible_sale_con_fallo(self) -> None:
-        assert main(["run", "develop"]) == ExitCode.FAILURE
+        assert main(["run", "reel"]) == ExitCode.FAILURE
 
     def test_la_ingesta_sin_carpeta_sale_con_entrada_invalida(self, tmp_path: Path) -> None:
         assert main(["--workspace", str(tmp_path), "run", "ingest"]) == ExitCode.INVALID_INPUT

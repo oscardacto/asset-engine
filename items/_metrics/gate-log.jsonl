@@ -165,3 +165,9 @@
 {"item":"HU-054","evento":"done","fecha":"2026-08-06","nota":"exposure hacia objetivo con proteccion de altas luces"}
 {"item":"HU-058","evento":"done","fecha":"2026-08-06","nota":"crop centrado conservador"}
 {"item":"HU-060","evento":"done","fecha":"2026-08-06","nota":"resize INTER_AREA"}
+{"item":"HU-064","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":90,"bloqueantes":0,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-064","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-064","evento":"qa","fecha":"2026-08-06","criterios_total":7,"criterios_fallidos":0,"rework":false,"notas":"validado en subconjunto real sala/: 63-75 -> 113-128 de brillo; 2m27s/16 fotos anotado para HU-063"}
+{"item":"HU-064","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-061","evento":"done","fecha":"2026-08-06","nota":"export sin EXIF por construccion, test verifica"}
+{"item":"HU-065","evento":"done","fecha":"2026-08-06","nota":"report develop antes/despues, formato Maestro 8.4"}
