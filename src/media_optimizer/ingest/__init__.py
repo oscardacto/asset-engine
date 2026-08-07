@@ -14,6 +14,11 @@ from media_optimizer.ingest.catalog import (
     load_catalog,
     save_catalog,
 )
+from media_optimizer.ingest.degradation import (
+    WHATSAPP_MAX_BYTES_PER_PIXEL,
+    below_native,
+    whatsapp_compression,
+)
 from media_optimizer.ingest.dimensions import (
     MAX_DECODED_BYTES,
     MAX_SIDE,
@@ -57,6 +62,7 @@ __all__ = [
     "MAX_DECODED_BYTES",
     "MAX_SIDE",
     "SUPPORTED_FORMATS",
+    "WHATSAPP_MAX_BYTES_PER_PIXEL",
     "AssetChange",
     "AssetOrientation",
     "Catalog",
@@ -72,6 +78,7 @@ __all__ = [
     "QuarantinedAsset",
     "ReingestPlan",
     "TriageResult",
+    "below_native",
     "catalog_from_triage",
     "compute_content_hash",
     "detect_image_format",
@@ -88,4 +95,5 @@ __all__ = [
     "save_catalog",
     "scan_input_folder",
     "triage_media",
+    "whatsapp_compression",
 ]
