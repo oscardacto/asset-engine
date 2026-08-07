@@ -152,3 +152,9 @@
 {"item":"HU-035","evento":"done","fecha":"2026-08-06","nota":"analysis.json determinista, clave por hash de contenido"}
 {"item":"HU-036","evento":"done","fecha":"2026-08-06","nota":"report analysis: tabla por score con veredicto y causas"}
 {"item":"HU-037","evento":"done","fecha":"2026-08-06","nota":"etapa analyze: 38 s por las 102 fotos reales, PARTIAL si hay ilegibles"}
+{"item":"HU-051","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":90,"bloqueantes":0,"resultado":"LISTA_PARA_DEV","nota":"contrato del motor + tanda 051/052/055"}
+{"item":"HU-051","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-051","evento":"qa","fecha":"2026-08-06","criterios_total":6,"criterios_fallidos":0,"rework":false,"notas":"develop.py 100%; contrato probado con transform falso"}
+{"item":"HU-051","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-052","evento":"done","fecha":"2026-08-06","nota":"white_balance calidez en luces, test de asimetria"}
+{"item":"HU-055","evento":"done","fecha":"2026-08-06","nota":"saturation con tope del perfil validado en el plan"}
