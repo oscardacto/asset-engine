@@ -238,7 +238,22 @@ class TestLaIngestaDePuntaAPunta:
     ) -> None:
         """Ya hay catálogo: el problema es el reporte, no lo que el usuario escribió."""
         filesystem.write_bytes(tmp_path / CATALOG_FILENAME, b"{}")
-        assert main(["--workspace", str(tmp_path), "report", "inventory"]) == ExitCode.FAILURE
+        assert main(["--workspace", str(tmp_path), "report", "analysis"]) == ExitCode.FAILURE
+
+    def test_el_reporte_de_inventario_llega_a_consola_y_a_disco(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        lote = tmp_path / "lote"
+        lote.mkdir()
+        (lote / "foto.jpg").write_bytes(encode_jpeg(textured_image(64, 48, 100, seed=7)))
+        salidas = tmp_path / "salidas"
+        main(["--workspace", str(salidas), "run", "ingest", str(lote)])
+
+        codigo = main(["--workspace", str(salidas), "report", "inventory", "--format", "markdown"])
+
+        assert codigo == ExitCode.OK
+        assert "| foto.jpg | 64x48 | horizontal |" in capsys.readouterr().out
+        assert filesystem.exists(salidas / "reports" / "inventory.md")
 
 
 class TestConsola:
