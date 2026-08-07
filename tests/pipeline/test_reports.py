@@ -90,7 +90,7 @@ class TestEntradasInvalidas:
         self, workspace_con_catalogo: Path
     ) -> None:
         with pytest.raises(InvalidInputError, match="no está disponible"):
-            generate_report("analysis", _peticion(workspace_con_catalogo))
+            generate_report("selection", _peticion(workspace_con_catalogo))
 
     def test_el_formato_jsonl_no_aplica_al_inventario(self, workspace_con_catalogo: Path) -> None:
         with pytest.raises(InvalidInputError, match="jsonl"):
@@ -102,11 +102,11 @@ class TestDisponibilidadDerivada:
         for reporte in REPORTS:
             assert reporte.available == (reporte.name in available_reports())
 
-    def test_inventory_esta_disponible_y_el_resto_todavia_no(self) -> None:
+    def test_los_reportes_disponibles_son_exactamente_los_con_generador(self) -> None:
         entrada = find_report("inventory")
         assert entrada is not None
         assert entrada.available is True
-        assert available_reports() == frozenset({"inventory"})
+        assert available_reports() == frozenset({"inventory", "analysis"})
 
 
 class TestCapaSecundaria:
@@ -127,3 +127,27 @@ class TestCapaSecundaria:
         """Un timestamp rompería la comparación byte a byte entre corridas."""
         contenido = generate_report("inventory", _peticion(workspace_con_catalogo)).content
         assert "2026" not in contenido
+
+
+class TestReporteDeAnalisis:
+    @pytest.fixture
+    def workspace_analizado(self, workspace_con_catalogo: Path) -> Path:
+        execute_stage(
+            "analyze",
+            StageRequest(workspace=workspace_con_catalogo, profile="hospedaje", source=None),
+        )
+        return workspace_con_catalogo
+
+    def test_la_tabla_va_ordenada_por_score_con_veredicto(self, workspace_analizado: Path) -> None:
+        contenido = generate_report("analysis", _peticion(workspace_analizado)).content
+        assert "| Foto | Score |" in contenido
+        assert "vertical.jpg" in contenido and "horizontal.jpg" in contenido
+
+    def test_dos_generaciones_dan_los_mismos_bytes(self, workspace_analizado: Path) -> None:
+        primero = generate_report("analysis", _peticion(workspace_analizado)).content
+        segundo = generate_report("analysis", _peticion(workspace_analizado)).content
+        assert primero == segundo
+
+    def test_sin_analisis_dice_que_ejecutar(self, workspace_con_catalogo: Path) -> None:
+        with pytest.raises(InvalidInputError, match="run analyze"):
+            generate_report("analysis", _peticion(workspace_con_catalogo))

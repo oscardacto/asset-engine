@@ -118,7 +118,7 @@ class TestContextoGlobal:
 
 class TestCodigosDeSalida:
     def test_una_etapa_todavia_no_disponible_sale_con_fallo(self) -> None:
-        assert main(["run", "analyze"]) == ExitCode.FAILURE
+        assert main(["run", "develop"]) == ExitCode.FAILURE
 
     def test_la_ingesta_sin_carpeta_sale_con_entrada_invalida(self, tmp_path: Path) -> None:
         assert main(["--workspace", str(tmp_path), "run", "ingest"]) == ExitCode.INVALID_INPUT
@@ -238,7 +238,7 @@ class TestLaIngestaDePuntaAPunta:
     ) -> None:
         """Ya hay catálogo: el problema es el reporte, no lo que el usuario escribió."""
         filesystem.write_bytes(tmp_path / CATALOG_FILENAME, b"{}")
-        assert main(["--workspace", str(tmp_path), "report", "analysis"]) == ExitCode.FAILURE
+        assert main(["--workspace", str(tmp_path), "report", "selection"]) == ExitCode.FAILURE
 
     def test_el_reporte_de_inventario_llega_a_consola_y_a_disco(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]

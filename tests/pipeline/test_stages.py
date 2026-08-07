@@ -7,6 +7,7 @@ originales quedan byte a byte intactos y que dos corridas producen exactamente e
 mismo catálogo.
 """
 
+import json
 from pathlib import Path
 
 import pytest
@@ -127,7 +128,7 @@ class TestEntradasInvalidas:
 
     def test_una_etapa_sin_ejecutor_falla_con_claridad(self, tmp_path: Path) -> None:
         with pytest.raises(InvalidInputError, match="no está disponible"):
-            execute_stage("analyze", _peticion(tmp_path))
+            execute_stage("develop", _peticion(tmp_path))
 
 
 class TestIntegridad:
@@ -161,10 +162,10 @@ class TestDisponibilidadDerivada:
         for etapa in STAGES:
             assert etapa.available == (etapa.name in available_stages())
 
-    def test_ingest_esta_disponible_y_el_resto_todavia_no(self) -> None:
+    def test_las_etapas_disponibles_son_exactamente_las_con_ejecutor(self) -> None:
         assert find_stage("ingest") is not None
         assert find_stage("ingest").available is True  # type: ignore[union-attr]
-        assert available_stages() == frozenset({"ingest"})
+        assert available_stages() == frozenset({"ingest", "analyze"})
 
 
 class TestCapaSecundaria:
@@ -185,3 +186,40 @@ class TestCapaSecundaria:
         )
         execute_stage("ingest", peticion)
         assert filesystem.exists(tmp_path / "sin" / "crear" / CATALOG_FILENAME)
+
+
+class TestEtapaAnalyze:
+    """La etapa completa: catálogo → análisis con veredictos, determinista."""
+
+    def test_produce_el_analisis_con_veredicto_por_foto(self, tmp_path: Path) -> None:
+        _sembrar_lote(tmp_path / "lote")
+        execute_stage("ingest", _peticion(tmp_path))
+
+        resultado = execute_stage("analyze", _peticion(tmp_path))
+
+        datos = json.loads(
+            filesystem.read_bytes(tmp_path / "salidas" / "analysis.json").decode("utf-8")
+        )
+        assert len(datos["assets"]) == 2  # 3 archivos, 2 contenidos distintos
+        for ficha in datos["assets"].values():
+            assert ficha["verdict"] in {"publishable", "support", "discard"}
+            assert "exposure_score" in ficha["metrics"]
+        assert "Fotos analizadas: 2" in "\n".join(resultado.summary)
+
+    def test_dos_corridas_dan_el_mismo_analisis_byte_a_byte(self, tmp_path: Path) -> None:
+        _sembrar_lote(tmp_path / "lote")
+        execute_stage("ingest", _peticion(tmp_path))
+
+        execute_stage("analyze", _peticion(tmp_path))
+        primero = filesystem.read_bytes(tmp_path / "salidas" / "analysis.json")
+        execute_stage("analyze", _peticion(tmp_path))
+        segundo = filesystem.read_bytes(tmp_path / "salidas" / "analysis.json")
+
+        assert primero == segundo
+
+    def test_sin_catalogo_dice_que_falta_la_ingesta(self, tmp_path: Path) -> None:
+        with pytest.raises(InvalidInputError, match="catálogo"):
+            execute_stage(
+                "analyze",
+                StageRequest(workspace=tmp_path / "vacio", profile="h", source=None),
+            )

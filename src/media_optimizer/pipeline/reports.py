@@ -11,6 +11,7 @@ generado se compara byte a byte entre corridas, no lleva fecha ni hora: dos
 generaciones sobre el mismo catálogo producen exactamente el mismo archivo.
 """
 
+import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -135,3 +136,63 @@ def _flags(entrada: object) -> str:
 _GENERADORES: dict[str, Callable[[ReportRequest], str]] = {
     "inventory": _inventory,
 }
+
+
+def _analysis(request: ReportRequest) -> str:
+    """Tabla del lote ordenada por calificación, con veredicto y causas."""
+    destino = request.workspace / "analysis.json"
+    if not filesystem.exists(destino):
+        msg = (
+            f"no hay análisis en '{request.workspace}': "
+            "ejecuta primero: media-optimizer run analyze"
+        )
+        raise InvalidInputError(msg)
+    datos = json.loads(filesystem.read_bytes(destino).decode("utf-8"))
+    inventario = load_catalog(request.workspace)
+    nombres = {entrada.content_hash: entrada.source for entrada in inventario.entries}
+
+    filas = sorted(
+        (
+            (
+                float(ficha["metrics"]["exposure_score"]),
+                nombres.get(huella, huella[:12]),
+                ficha,
+            )
+            for huella, ficha in datos["assets"].items()
+        ),
+        key=lambda fila: (-fila[0], fila[1]),
+    )
+    conteo: dict[str, int] = {}
+    for _, _, ficha in filas:
+        conteo[str(ficha["verdict"])] = conteo.get(str(ficha["verdict"]), 0) + 1
+
+    if request.output_format == _MARKDOWN:
+        lineas = [
+            "# Análisis del lote",
+            "",
+            " · ".join(f"{v}: **{n}**" for v, n in sorted(conteo.items())),
+            "",
+            "| Foto | Score | Brillo | Veredicto | Flags | Causas |",
+            "|------|-------|--------|-----------|-------|--------|",
+        ]
+        lineas.extend(
+            f"| {nombre} | {score:.2f} | {ficha['metrics']['mean_brightness']:.0f} "
+            f"| {ficha['verdict']} | {', '.join(ficha['flags']) or '—'} "
+            f"| {'; '.join(ficha['causes']) or '—'} |"
+            for score, nombre, ficha in filas
+        )
+    else:
+        lineas = [
+            "ANÁLISIS DEL LOTE",
+            " · ".join(f"{v}: {n}" for v, n in sorted(conteo.items())),
+            "",
+        ]
+        lineas.extend(
+            f"{score:.2f}  {ficha['verdict']:11}  {nombre}"
+            f"{'  [' + ', '.join(ficha['flags']) + ']' if ficha['flags'] else ''}"
+            for score, nombre, ficha in filas
+        )
+    return "\n".join(lineas) + "\n"
+
+
+_GENERADORES["analysis"] = _analysis

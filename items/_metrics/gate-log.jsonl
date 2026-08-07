@@ -143,3 +143,12 @@
 {"item":"HU-007","evento":"qa","fecha":"2026-08-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"notas":"KPI lote real: 16/16 WA detectadas, 0 FP en 86; serie de 43 pendiente de entrega"}
 {"item":"HU-007","evento":"done","fecha":"2026-08-06"}
 {"item":"HU-008","evento":"done","fecha":"2026-08-06","nota":"implementada con HU-007; below_native sobre OutputFormat de HU-160, admite foto girada"}
+{"item":"HU-029","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":90,"bloqueantes":0,"resultado":"LISTA_PARA_DEV","nota":"spec conjunta 029+030; 035/036/037 como composicion"}
+{"item":"HU-029","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-020","evento":"rework","fecha":"2026-08-06","origen":"HU-037","motivo":"luminance casteaba a float64 la imagen completa: ~4.8 GB por foto de 200 MP, etapa colgada; cvtColor da los mismos pesos en C","detectado_por":"corrida sobre el lote real"}
+{"item":"HU-029","evento":"qa","fecha":"2026-08-06","criterios_total":7,"criterios_fallidos":0,"rework":false}
+{"item":"HU-029","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-030","evento":"done","fecha":"2026-08-06","nota":"con HU-029: verdict_for con causas y regla WhatsApp"}
+{"item":"HU-035","evento":"done","fecha":"2026-08-06","nota":"analysis.json determinista, clave por hash de contenido"}
+{"item":"HU-036","evento":"done","fecha":"2026-08-06","nota":"report analysis: tabla por score con veredicto y causas"}
+{"item":"HU-037","evento":"done","fecha":"2026-08-06","nota":"etapa analyze: 38 s por las 102 fotos reales, PARTIAL si hay ilegibles"}
