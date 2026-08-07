@@ -132,3 +132,9 @@
 {"item":"HU-018","evento":"dev","fecha":"2026-08-06"}
 {"item":"HU-018","evento":"qa","fecha":"2026-08-06","criterios_total":7,"criterios_fallidos":0,"rework":false,"notas":"reports.py 100%; validado con lote real"}
 {"item":"HU-018","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-020","evento":"gate_spec","fecha":"2026-08-06","intento":1,"confianza":90,"bloqueantes":0,"importantes":0,"informativas":0,"resultado":"LISTA_PARA_DEV","nota":"spec conjunta 020+021+022"}
+{"item":"HU-020","evento":"dev","fecha":"2026-08-06"}
+{"item":"HU-020","evento":"qa","fecha":"2026-08-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"notas":"exposure.py 100%; luminancia Rec.601 con test de colores puros; validado en fotos reales"}
+{"item":"HU-020","evento":"done","fecha":"2026-08-06"}
+{"item":"HU-021","evento":"done","fecha":"2026-08-06","nota":"implementada con HU-020; crushed_shadows_ratio con umbral del perfil"}
+{"item":"HU-022","evento":"done","fecha":"2026-08-06","nota":"implementada con HU-020; blown_highlights_ratio con umbral del perfil"}
