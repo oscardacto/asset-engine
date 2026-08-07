@@ -14,7 +14,7 @@ import pytest
 
 import media_optimizer.pipeline.stages as stages_module
 from media_optimizer.core import InvalidInputError, MediaOptimizerError, StageReport
-from media_optimizer.ingest import CATALOG_FILENAME, filesystem, load_catalog
+from media_optimizer.ingest import CATALOG_FILENAME, filesystem, load_catalog, read_exif
 from media_optimizer.pipeline import STAGES, find_stage
 from media_optimizer.pipeline.stages import (
     StageRequest,
@@ -128,7 +128,7 @@ class TestEntradasInvalidas:
 
     def test_una_etapa_sin_ejecutor_falla_con_claridad(self, tmp_path: Path) -> None:
         with pytest.raises(InvalidInputError, match="no está disponible"):
-            execute_stage("develop", _peticion(tmp_path))
+            execute_stage("reel", _peticion(tmp_path))
 
 
 class TestIntegridad:
@@ -165,7 +165,7 @@ class TestDisponibilidadDerivada:
     def test_las_etapas_disponibles_son_exactamente_las_con_ejecutor(self) -> None:
         assert find_stage("ingest") is not None
         assert find_stage("ingest").available is True  # type: ignore[union-attr]
-        assert available_stages() == frozenset({"ingest", "analyze"})
+        assert available_stages() == frozenset({"ingest", "analyze", "develop"})
 
 
 class TestCapaSecundaria:
@@ -223,3 +223,60 @@ class TestEtapaAnalyze:
                 "analyze",
                 StageRequest(workspace=tmp_path / "vacio", profile="h", source=None),
             )
+
+
+class TestEtapaDevelop:
+    def _preparar(self, tmp_path: Path) -> None:
+        _sembrar_lote(tmp_path / "lote")
+        execute_stage("ingest", _peticion(tmp_path))
+        execute_stage("analyze", _peticion(tmp_path))
+
+    def test_produce_reveladas_con_historial_y_antes_despues(self, tmp_path: Path) -> None:
+        self._preparar(tmp_path)
+
+        resultado = execute_stage("develop", _peticion(tmp_path))
+
+        datos = json.loads(
+            filesystem.read_bytes(tmp_path / "salidas" / "develop.json").decode("utf-8")
+        )
+        assert len(datos["assets"]) == 2  # una por contenido, no por copia
+        for ficha in datos["assets"].values():
+            assert filesystem.exists(tmp_path / "salidas" / "derived" / ficha["output"])
+            assert [p["name"] for p in ficha["history"]] == [
+                "clahe",
+                "shadows",
+                "exposure",
+                "white_balance",
+                "saturation",
+            ]
+            assert "brightness_before" in ficha and "brightness_after" in ficha
+        assert "Fotos reveladas: 2" in "\n".join(resultado.summary)
+
+    def test_dos_corridas_dan_el_mismo_develop_json(self, tmp_path: Path) -> None:
+        self._preparar(tmp_path)
+        execute_stage("develop", _peticion(tmp_path))
+        primero = filesystem.read_bytes(tmp_path / "salidas" / "develop.json")
+        execute_stage("develop", _peticion(tmp_path))
+        segundo = filesystem.read_bytes(tmp_path / "salidas" / "develop.json")
+        assert primero == segundo
+
+    def test_los_originales_siguen_intactos_tras_revelar(self, tmp_path: Path) -> None:
+        self._preparar(tmp_path)
+        execute_stage("develop", _peticion(tmp_path))
+        assert (tmp_path / "lote" / "a.jpg").read_bytes() == _FOTO_A
+
+    def test_la_salida_no_lleva_exif(self, tmp_path: Path) -> None:
+        """El export nace limpio: sin GPS ni metadatos personales."""
+
+        self._preparar(tmp_path)
+        execute_stage("develop", _peticion(tmp_path))
+        derivadas = list(filesystem.iter_files(tmp_path / "salidas" / "derived"))
+        assert derivadas
+        for derivada in derivadas:
+            assert read_exif(derivada).is_present is False
+
+    def test_sin_analisis_dice_que_ejecutar(self, tmp_path: Path) -> None:
+        _sembrar_lote(tmp_path / "lote")
+        execute_stage("ingest", _peticion(tmp_path))
+        with pytest.raises(InvalidInputError, match="run analyze"):
+            execute_stage("develop", _peticion(tmp_path))

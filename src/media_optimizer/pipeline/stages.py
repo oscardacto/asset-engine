@@ -17,6 +17,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+import cv2
+
 from media_optimizer.core import (
     CorruptMediaError,
     InvalidInputError,
@@ -25,6 +27,7 @@ from media_optimizer.core import (
     OutputIntent,
     QualityReport,
     StageReport,
+    Transform,
     Verdict,
 )
 from media_optimizer.ingest import (
@@ -47,14 +50,25 @@ from media_optimizer.ingest import (
     whatsapp_compression,
 )
 from media_optimizer.logs import get_logger
-from media_optimizer.photo import ExposureThresholds, exposure_score, verdict_for
+from media_optimizer.photo import (
+    ExposureThresholds,
+    apply_pipeline,
+    build_plan,
+    exposure_score,
+    verdict_for,
+)
 from media_optimizer.vision import (
     blown_highlights_ratio,
     crushed_shadows_ratio,
     decode_image,
     mean_brightness,
 )
-from media_optimizer.workspace import SourceFingerprint, Workspace, find_modified_sources
+from media_optimizer.workspace import (
+    SourceFingerprint,
+    Workspace,
+    find_modified_sources,
+    safe_output_name,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -292,3 +306,103 @@ def _analizar_asset(root: Path, entrada: CatalogEntry) -> dict[str, object] | No
 
 
 _EJECUTORES["analyze"] = _analyze
+
+
+# --- etapa develop -----------------------------------------------------------
+
+DEVELOP_FILENAME = "develop.json"
+DERIVED_DIRNAME = "derived"
+_CALIDAD_JPEG = 92
+
+# El plan de revelado del cliente 0 mientras llega el perfil como archivo.
+# TODO(HU-135): el orden y los valores pasan a la plantilla del perfil.
+_PLAN_REVELADO = (
+    Transform(name="clahe", params={"clip_limit": 2.0, "tile_size": 8}),
+    Transform(name="shadows", params={"amount": 0.35}),
+    Transform(name="exposure", params={"target_brightness": 128}),
+    Transform(name="white_balance", params={"warmth": 0.06}),
+    Transform(name="saturation", params={"factor": 1.06, "max_factor": 1.06}),
+)
+
+
+def _develop(request: StageRequest) -> tuple[tuple[str, ...], bool]:
+    """Analizadas → reveladas en ``derived/``, con antes/después y historial."""
+    inventario = load_catalog(request.workspace)
+    ruta_analisis = request.workspace / ANALYSIS_FILENAME
+    if not filesystem.exists(ruta_analisis):
+        msg = (
+            f"no hay análisis en '{request.workspace}': "
+            "ejecuta primero: media-optimizer run analyze"
+        )
+        raise InvalidInputError(msg)
+    analisis = json.loads(filesystem.read_bytes(ruta_analisis).decode("utf-8"))["assets"]
+
+    plan = build_plan(_PLAN_REVELADO)
+    destino_dir = request.workspace / DERIVED_DIRNAME
+    filesystem.make_directory(destino_dir)
+
+    reveladas: dict[str, dict[str, object]] = {}
+    usados: set[str] = set()
+    descartadas = ilegibles = 0
+    for entrada in inventario.entries:
+        ficha = analisis.get(entrada.content_hash)
+        if ficha is None or ficha["verdict"] == Verdict.DISCARD.value:
+            descartadas += 1
+            continue
+        if entrada.content_hash in reveladas:
+            continue  # copias del mismo contenido: se revela una sola vez
+        resultado = _revelar_asset(inventario.root, entrada, plan, destino_dir, usados)
+        if resultado is None:
+            ilegibles += 1
+            continue
+        reveladas[entrada.content_hash] = resultado
+
+    documento = {"version": 1, "plan": [_paso_a_dict(p) for p in plan], "assets": reveladas}
+    texto = json.dumps(documento, indent=2, sort_keys=True, ensure_ascii=False)
+    filesystem.write_bytes(request.workspace / DEVELOP_FILENAME, (texto + "\n").encode("utf-8"))
+
+    resumen = (
+        f"Fotos reveladas: {len(reveladas)}",
+        f"  descartadas por veredicto: {descartadas}",
+        *((f"  ilegibles: {ilegibles}",) if ilegibles else ()),
+        f"Salidas en: {destino_dir}",
+    )
+    return resumen, ilegibles > 0
+
+
+def _revelar_asset(
+    root: Path,
+    entrada: CatalogEntry,
+    plan: tuple[Transform, ...],
+    destino_dir: Path,
+    usados: set[str],
+) -> dict[str, object] | None:
+    ruta = root / entrada.source
+    try:
+        imagen = decode_image(ruta)
+    except CorruptMediaError:
+        return None
+    antes = round(mean_brightness(imagen), 2)
+    revelada, historial = apply_pipeline(imagen, plan)
+    despues = round(mean_brightness(revelada), 2)
+
+    nombre = safe_output_name(Path(entrada.source).name, frozenset(usados))
+    usados.add(nombre)
+    ok, codificada = cv2.imencode(".jpg", revelada, [cv2.IMWRITE_JPEG_QUALITY, _CALIDAD_JPEG])
+    if not ok:  # pragma: no cover - imencode no falla sobre uint8 valido
+        return None
+    # imencode no escribe EXIF: la salida nace sin GPS ni metadatos personales.
+    filesystem.write_bytes(destino_dir / nombre, codificada.tobytes())
+    return {
+        "output": nombre,
+        "brightness_before": antes,
+        "brightness_after": despues,
+        "history": [_paso_a_dict(paso) for paso in historial],
+    }
+
+
+def _paso_a_dict(paso: Transform) -> dict[str, object]:
+    return {"name": paso.name, "params": dict(paso.params)}
+
+
+_EJECUTORES["develop"] = _develop
