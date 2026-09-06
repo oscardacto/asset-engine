@@ -14,6 +14,11 @@ from media_optimizer.video.ffmpeg_executor import (
     probe_filtergraph,
     run,
 )
+from media_optimizer.video.framing import (
+    build_crop_command,
+    crop_to_vertical,
+    read_dimensions,
+)
 from media_optimizer.video.scene_scoring import (
     MUESTRAS_POR_ESCENA,
     score_scene,
@@ -59,7 +64,9 @@ __all__ = [
     "VerticalFraming",
     "assign_slots",
     "build_command",
+    "build_crop_command",
     "build_probe_command",
+    "crop_to_vertical",
     "degrade",
     "detect_version",
     "frame_to_vertical",
@@ -67,6 +74,7 @@ __all__ = [
     "log_version",
     "normalized_segment",
     "probe_filtergraph",
+    "read_dimensions",
     "run",
     "score_scene",
     "score_scenes",

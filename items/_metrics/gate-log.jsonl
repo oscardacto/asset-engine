@@ -207,3 +207,6 @@
 {"item":"HU-103","evento":"dev","fecha":"2026-09-06","notas":"28 tests, scene_selection.py 100%; umbrales validados sobre 19 escenas reales: 8 conservadas (42%), 0 descartes por exposicion"}
 {"item":"HU-103","evento":"qa","fecha":"2026-09-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"cobertura_modulo":"100%","cobertura_total":"99%","tests":"780 passed, 1 skipped","notas":"umbrales validados sobre 19 escenas reales: 8 conservadas (42%), causas too_short 5 / unstable 10 / poor_exposure 0"}
 {"item":"HU-103","evento":"done","fecha":"2026-09-06"}
+{"item":"HU-104","evento":"gate_apertura","fecha":"2026-09-06","epica":"E5","dependencias_satisfechas":["HU-101","ADR-006"],"nota":"la aritmetica del encuadre ya existe desde la tanda de HU-135; falta aplicarla a clips reales"}
+{"item":"HU-104","evento":"gate_spec","fecha":"2026-09-06","intento":1,"confianza":90,"bloqueantes":0,"importantes":0,"informativas":0,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-104","evento":"dev","fecha":"2026-09-06","notas":"23 tests, framing.py 100%; validado con material real: el celular del cliente ya graba 9:16, ninguno recorta ancho"}
