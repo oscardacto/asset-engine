@@ -171,3 +171,13 @@
 {"item":"HU-064","evento":"done","fecha":"2026-08-06"}
 {"item":"HU-061","evento":"done","fecha":"2026-08-06","nota":"export sin EXIF por construccion, test verifica"}
 {"item":"HU-065","evento":"done","fecha":"2026-08-06","nota":"report develop antes/despues, formato Maestro 8.4"}
+{"item":"HU-078","evento":"gate_spec","fecha":"2026-09-05","intento":1,"confianza":88,"bloqueantes":0,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-078","evento":"dev","fecha":"2026-09-05"}
+{"item":"HU-078","evento":"qa","fecha":"2026-09-05","criterios_total":8,"criterios_fallidos":0,"rework":false,"notas":"pipeline E2E validado con lote real: determinismo byte a byte, originales intactos"}
+{"item":"HU-078","evento":"done","fecha":"2026-09-05"}
+{"item":"HU-070","evento":"done","fecha":"2026-09-05","nota":"score global ponderado y normalizado"}
+{"item":"HU-071","evento":"done","fecha":"2026-09-05","nota":"candidatas a portada con elegibilidad tecnica"}
+{"item":"HU-072","evento":"done","fecha":"2026-09-05","nota":"orden de galeria: gancho + alternancia; plantilla por ambientes espera HU-135"}
+{"item":"HU-074","evento":"done","fecha":"2026-09-05","nota":"seleccion por formato con flag below_native"}
+{"item":"HU-180","evento":"done","fecha":"2026-09-05","nota":"secuencia que propaga partial; la degradacion ya vivia en cada etapa"}
+{"item":"HU-184","evento":"done","fecha":"2026-09-05","nota":"run all: ingest+analyze+develop+select con un comando"}

@@ -238,7 +238,7 @@ class TestLaIngestaDePuntaAPunta:
     ) -> None:
         """Ya hay catálogo: el problema es el reporte, no lo que el usuario escribió."""
         filesystem.write_bytes(tmp_path / CATALOG_FILENAME, b"{}")
-        assert main(["--workspace", str(tmp_path), "report", "selection"]) == ExitCode.FAILURE
+        assert main(["--workspace", str(tmp_path), "report", "reel"]) == ExitCode.FAILURE
 
     def test_el_reporte_de_inventario_llega_a_consola_y_a_disco(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
