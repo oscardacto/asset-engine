@@ -6,7 +6,15 @@ requires-python = ">=3.12"
 dependencies = [
     "numpy>=2.0",
     "opencv-python-headless>=4.10",
+    "scenedetect>=0.7",
 ]
+
+# scenedetect declara opencv-python (con GUI), que instala el mismo modulo cv2 que
+# opencv-python-headless: los dos se pisan y cual gana depende del orden de
+# instalacion. Se midio que deja el paquete cv2 inservible. Este override lo deja
+# fuera con un marcador que nunca se cumple; scenedetect funciona con headless.
+[tool.uv]
+override-dependencies = ["opencv-python; sys_platform == 'no_such_platform'"]
 
 [dependency-groups]
 dev = [
@@ -70,6 +78,12 @@ max-args = 5
 python_version = "3.12"
 strict = true
 files = ["src"]
+
+# scenedetect no publica tipos. El silencio se limita a esa importacion: lo que
+# entra y sale del adaptador si esta tipado, y el dominio nunca la ve.
+[[tool.mypy.overrides]]
+module = ["scenedetect.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

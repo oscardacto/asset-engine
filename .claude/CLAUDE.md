@@ -43,7 +43,7 @@ Todo corre **local y determinista** — sin nube.
 |------|-----------|
 | Núcleo / dominio | Python 3.12+ · typing estricto · dataclasses |
 | Visión por computador | opencv-python-headless + NumPy (ADR-002) |
-| Video | ffmpeg + PySceneDetect (ADR pendiente) |
+| Video | ffmpeg por subprocess + PySceneDetect (ADR-006) |
 | Interfaz | CLI con `argparse` de la stdlib + frontera tipada (ADR-005) — GUI fuera de alcance v1 |
 | Catálogo local | Manifiestos JSON con claves ordenadas (ADR-003) |
 | Calidad | pytest · coverage · ruff · mypy |
@@ -52,7 +52,8 @@ Todo corre **local y determinista** — sin nube.
 
 | Módulo | Propósito |
 |--------|-----------|
-| `core/` | Contratos del dominio: MediaAsset, QualityReport, Transform, BusinessProfile — **sin IO** |
+| `core/` | Contratos del dominio: MediaAsset, QualityReport, Transform, BusinessProfile, Scene — **sin IO** |
+| `core/ports/` | Puertos del dominio: lo que el núcleo necesita declarado como contrato, sin decir quién lo provee (`SceneDetectorPort`) — puro, sin terceros |
 | `ingest/` | Escaneo, validación y catálogo de los medios crudos (E1) — infraestructura de entrada |
 | `workspace` | Directorio de trabajo: layout de salidas, nombres escribibles y verificación de que los originales quedaron intactos — módulo de nivel superior porque lo usan todas las etapas |
 | `logs` | Rastro estructurado en JSON lines: niveles, campos por evento y escritura a archivo a través de la capa de ADR-004 — nivel superior por la misma razón |
