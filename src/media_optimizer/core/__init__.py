@@ -31,10 +31,17 @@ from media_optimizer.core.scene_selection import (
     kept_scenes,
     select_scenes,
 )
+from media_optimizer.core.scene_trimmer import (
+    MINIMO_POR_ESCENA,
+    TrimPlan,
+    TrimStrategy,
+    trim_to_target,
+)
 from media_optimizer.core.stage_report import ReproducibleStageSummary, StageReport
 from media_optimizer.core.transform import ParamValue, Transform, TransformHistory
 
 __all__ = [
+    "MINIMO_POR_ESCENA",
     "UMBRALES_POR_DEFECTO",
     "BusinessProfile",
     "CorruptMediaError",
@@ -58,6 +65,8 @@ __all__ = [
     "StageReport",
     "Transform",
     "TransformHistory",
+    "TrimPlan",
+    "TrimStrategy",
     "Verdict",
     "judge_scene",
     "kept_scenes",
@@ -66,4 +75,5 @@ __all__ = [
     "stable_order_by",
     "stable_text",
     "stable_unique",
+    "trim_to_target",
 ]

@@ -1,6 +1,6 @@
 # HANDOFF — estado del proyecto
 
-> Actualizado: 2026-09-06, al cerrar HU-104.
+> Actualizado: 2026-09-06, al cerrar HU-106.
 > Este archivo se reescribe al cerrar cada bloque. Dice **dónde está el proyecto** y
 > **qué se puede empezar mañana sin releer nada**.
 
@@ -10,10 +10,10 @@
 
 | | |
 |---|---|
-| Commit | ver §7 — actualizado en el merge de HU-104 |
+| Commit | ver §7 — actualizado en el merge de HU-106 |
 | Árbol de trabajo | limpio · pusheado |
-| HUs cerradas | **60** |
-| Tests | **803 passed · 1 skipped** (el omitido es comportamiento POSIX en Windows) |
+| HUs cerradas | **61** |
+| Tests | **835 passed · 1 skipped** (el omitido es comportamiento POSIX en Windows) |
 | Cobertura | **99%** global · 100% en `core/`, `ranking/` y `video/framing.py` |
 | `ruff check` · `ruff format --check` · `mypy src/` | los tres en verde |
 
@@ -64,8 +64,23 @@ que resuelva material horizontal, comprobar si ese material existe. Hoy no.
 | `Scene` | Un tramo de video entre dos cortes | 101 |
 | `SceneScore` | Calificación de una escena: componentes + nota general | 102 |
 | `DiscardReason` · `SceneThresholds` · `SceneVerdict` | Qué escenas sirven y por qué no las otras | 103 |
+| **`TrimStrategy` · `TrimPlan`** | **Ajuste de escenas a una duración objetivo exacta** | **106** |
 | `MediaOptimizerError` · `CorruptMediaError` · `InvalidInputError` | Jerarquía de fallos | 161 |
 | `stable_text` · `stable_order` · `stable_order_by` · `stable_unique` | Determinismo | 169 |
+
+**Nuevo en `core/scene_trimmer.py`** (HU-106) — dominio puro:
+
+```
+trim_to_target(scenes, target_seconds, *, strategy, min_scene_seconds) -> TrimPlan
+TrimStrategy.PROPORTIONAL   todas encogen igual: aparece todo el recorrido
+TrimStrategy.DROP_TAIL      las primeras salen enteras; el resto se descarta
+MINIMO_POR_ESCENA           1.0 s — evita que un recorte deje un parpadeo
+```
+
+**La cuenta va en milisegundos enteros.** En coma flotante el recorte proporcional da
+15.000000000000002 en vez de 15, y el charter promete duraciones exactas. `TrimPlan.is_exact`
+se calcula, no se guarda. **Material más corto que la meta no se alarga**: se devuelve entero
+con `is_exact` en falso, porque repetir cuadros o ralentizar cambia lo que se ve.
 
 ### `core/ports/`
 
@@ -119,28 +134,31 @@ report inventory · report analysis · report develop · report selection
 | 103 | Descarte con causas | ✅ DONE |
 | 104 | Crop 9:16 | ✅ DONE |
 | **105** | **Secuenciado narrativo según plantilla** | **lista, con reserva — ver §5** |
-| **106** | **Recorte de clips a duración objetivo** | **lista, sin reservas** |
-| 107 | Ensamblado del reel con transiciones | depende de 106 |
+| 106 | Recorte de clips a duración objetivo | ✅ DONE |
+| **107** | **Ensamblado del reel con transiciones** | **lista — 106 ya está** |
 | 109 | Export 1080×1920 con codec por plataforma | depende de 107 |
 | 110 | CLI `run reel` + reporte de escenas | depende de 109 |
 | 100 | Ingesta de clips con streaming | no iniciada — ver B-2 |
 
 ---
 
-## 5. Siguiente HU: **HU-106** antes que HU-105
+## 5. Siguiente HU: **HU-107** (ensamblado del reel)
 
-**Recomendación: HU-106** (recorte de clips a duración objetivo). Depende de HU-105 en el
-backlog, pero su núcleo —cortar un tramo de clip a una duración— no necesita el guion: se
-puede construir sobre `Scene` y quedar listo para cuando el secuenciado lo llame.
+Con HU-106 cerrada, el camino queda: escenas detectadas (101) → puntuadas (102) → filtradas
+(103) → encuadradas (104) → **ajustadas a duración (106)** → **ensambladas (107)**.
 
-**HU-105 está lista técnicamente pero su valor está bloqueado.** `kept_scenes` y
-`assign_slots` ya existen y es cablearlos, pero `assign_slots` reparte **por ambiente**, y el
-etiquetado de ambientes (HU-032) no existe. Con material sin etiquetar, todo tramo que exija
-ambiente queda como hueco: el guion del perfil `hospedaje` tiene 6 tramos y **los 6 declaran
-ambiente**, así que hoy produciría una línea de tiempo completamente vacía.
+**HU-107 es lo que produce el primer reel de verdad.** Junta clips en un solo archivo con
+transiciones simples. Todo lo que necesita existe: `crop_to_vertical` para el formato,
+`TrimPlan` para las duraciones, y el ejecutor con sus banderas de reproducibilidad.
 
-Hacer HU-105 ahora daría código correcto que no puede demostrarse útil. **Si se prioriza,
-antes conviene HU-032.**
+**HU-105 sigue bloqueada y no por código.** `kept_scenes` y `assign_slots` ya existen y es
+cablearlos, pero `assign_slots` reparte **por ambiente** y HU-032 no existe. Los 6 tramos del
+guion `hospedaje` **declaran ambiente**, así que hoy la línea de tiempo saldría vacía. Hacerla
+ahora daría código correcto que no puede demostrarse útil. **Si se prioriza el reel narrativo,
+antes va HU-032.**
+
+Sin HU-105, HU-107 puede ensamblar en el orden que dé el ranking en vez del guion — un reel
+válido, solo que no narrativo.
 
 ---
 
@@ -156,6 +174,7 @@ antes conviene HU-032.**
 | D-3 | Umbral de detección de escenas en 27.0 | Sobre el video largo produce 5 escenas de menos de 1,5 s. Con 40 desaparecen. Calibración: HU-133 |
 | D-4 | Los umbrales de descarte son un punto de partida medido, no calibrado | HU-133 los fija en el perfil. Con los actuales sobrevive el 42% (8 de 19) |
 | D-5 | La salida de `crop_to_vertical` no está afinada para plataforma | Codec, bitrate y perfil de color son HU-109 |
+| D-6 | `MINIMO_POR_ESCENA` (1 s) **no está calibrado con material real**, a diferencia de los umbrales de HU-103 | HU-133 debería revisarlo junto al umbral de duración de descarte (1,5 s), con el que guarda relación |
 
 ---
 
@@ -165,7 +184,7 @@ antes conviene HU-032.**
 git checkout develop && git pull
 export PATH="$PATH:/c/ffmpeg/ffmpeg-9.0.1-essentials_build/bin"
 uv sync
-uv run pytest            # 803 passed, 1 skipped
+uv run pytest            # 835 passed, 1 skipped
 uv run ruff check . && uv run ruff format --check . && uv run mypy src/
 ```
 

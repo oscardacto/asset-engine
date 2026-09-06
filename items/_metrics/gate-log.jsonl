@@ -212,3 +212,8 @@
 {"item":"HU-104","evento":"dev","fecha":"2026-09-06","notas":"23 tests, framing.py 100%; validado con material real: el celular del cliente ya graba 9:16, ninguno recorta ancho"}
 {"item":"HU-104","evento":"qa","fecha":"2026-09-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"cobertura_modulo":"100%","cobertura_total":"99%","tests":"803 passed, 1 skipped","notas":"12 de 23 tests no tocan el binario; validado con 4 clips reales, originales byte a byte iguales; hallazgo: el celular del cliente graba 9:16 nativo y nunca recorta ancho"}
 {"item":"HU-104","evento":"done","fecha":"2026-09-06"}
+{"item":"HU-106","evento":"gate_apertura","fecha":"2026-09-06","epica":"E5","nota":"se adelanta a HU-105 (su dependencia declarada) porque el nucleo del recorte no necesita el guion; HU-105 sigue bloqueada por HU-032","hallazgo_previo":"recorte proporcional en coma flotante da 15.000000000000002 en vez de 15: la aritmetica va en milisegundos enteros"}
+{"item":"HU-106","evento":"gate_spec","fecha":"2026-09-06","intento":1,"confianza":92,"bloqueantes":0,"importantes":0,"informativas":0,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-106","evento":"dev","fecha":"2026-09-06","notas":"32 tests, scene_trimmer.py 100%; aritmetica en milisegundos enteros para que la suma cierre exacta"}
+{"item":"HU-106","evento":"qa","fecha":"2026-09-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"cobertura_modulo":"100%","cobertura_total":"99%","tests":"835 passed, 1 skipped","notas":"exactitud verificada para 5 metas; hay test que demuestra que el calculo en coma flotante NO cierra"}
+{"item":"HU-106","evento":"done","fecha":"2026-09-06"}
