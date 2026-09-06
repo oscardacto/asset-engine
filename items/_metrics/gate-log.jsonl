@@ -195,3 +195,5 @@
 {"item":"HU-101","evento":"gate_apertura","fecha":"2026-09-06","epica":"E5","habilitada_por":"ADR-006 Aceptado 2026-09-06","dependencia_nueva":"scenedetect 0.7.1","hallazgos_previos":["conflicto de empaquetado cv2 con ADR-002, resuelto con override medido","la libreria no abre videos en rutas largas sin la capa de ADR-004"]}
 {"item":"HU-101","evento":"gate_spec","fecha":"2026-09-06","intento":1,"confianza":89,"bloqueantes":0,"importantes":1,"informativas":1,"resultado":"LISTA_PARA_DEV"}
 {"item":"HU-101","evento":"dev","fecha":"2026-09-06","notas":"adaptador implementado; los 8 tests en rojo declarado pasan a verde y se desmarcan"}
+{"item":"HU-101","evento":"qa","fecha":"2026-09-06","criterios_total":12,"criterios_fallidos":0,"rework":false,"cobertura_adaptador":"100%","cobertura_total":"99%","tests":"721 passed, 1 skipped","notas":"ciclo TDD verificable: 8 tests en xfail estricto pasaron a verde y el modo estricto obligo a desmarcarlos"}
+{"item":"HU-101","evento":"done","fecha":"2026-09-06"}
