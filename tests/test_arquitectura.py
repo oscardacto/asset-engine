@@ -46,6 +46,12 @@ _METODOS_DE_DISCO = frozenset(
 )
 _MODULOS_DE_DISCO = frozenset({"os", "shutil", "tempfile"})
 
+# Lanzar un proceso externo es tocar el disco por delegacion: el binario abre los
+# archivos por su cuenta y no aplica la adaptacion de rutas de la capa. Solo la capa
+# de video puede hacerlo, y traduce las rutas antes de entregarlas.
+_LANZADORES_DE_PROCESOS = frozenset({"subprocess"})
+_PAQUETE_DE_VIDEO = "video"
+
 # Clases de terceros que abren el archivo por dentro: la llamada no menciona `open`
 # ni `os`, pero acaba en disco igual. Se midió que `logging.FileHandler` normaliza la
 # ruta con `abspath` y, ante un nombre de dispositivo, descarta cada registro sin
@@ -151,6 +157,28 @@ def _importa(archivo: Path) -> set[str]:
     return nombres
 
 
+def test_lanzar_procesos_externos_vive_solo_en_la_capa_de_video() -> None:
+    """Un binario externo abre los archivos por su cuenta, sin la adaptacion de rutas.
+
+    Es el mismo patron que se midio destructivo en el manejador de archivos de la
+    biblioteca estandar. Solo la capa de video puede invocarlo, y traduce las rutas
+    antes de entregarlas.
+    """
+    infractores = [
+        str(archivo.relative_to(RAIZ_PRODUCCION))
+        for archivo in _modulos_de_produccion()
+        if archivo.parent.name != _PAQUETE_DE_VIDEO and _LANZADORES_DE_PROCESOS & _importa(archivo)
+    ]
+    assert not infractores, f"modulos fuera de video/ que lanzan procesos: {infractores}"
+
+
+def test_la_regla_detecta_un_lanzamiento_de_proceso(tmp_path: Path) -> None:
+    """Se comprueba que la regla ve lo que debe ver, en vez de suponerlo."""
+    culpable = tmp_path / "culpable.py"
+    culpable.write_text("import subprocess\nsubprocess.run(['ls'])\n", encoding="utf-8")
+    assert _LANZADORES_DE_PROCESOS & _importa(culpable)
+
+
 def test_el_parseo_de_argumentos_vive_solo_en_la_capa_de_linea_de_comandos() -> None:
     """`argparse` fuera de `cli/` significaría que el dominio conoce la interfaz."""
     infractores = [
@@ -190,7 +218,16 @@ def test_la_linea_de_comandos_no_lleva_listas_de_etapas_escritas_a_mano() -> Non
 
 def test_el_dominio_puro_no_importa_nada_de_infraestructura() -> None:
     """`core/` no puede depender de la capa de acceso ni de librerías de IO."""
-    prohibidos = {"os", "shutil", "cv2", "numpy", "argparse", "media_optimizer.ingest"}
+    prohibidos = {
+        "os",
+        "shutil",
+        "cv2",
+        "numpy",
+        "argparse",
+        "subprocess",
+        "media_optimizer.ingest",
+        "media_optimizer.video",
+    }
     for archivo in sorted((RAIZ_PRODUCCION / "core").rglob("*.py")):
         arbol = ast.parse(archivo.read_text(encoding="utf-8"), filename=str(archivo))
         for nodo in ast.walk(arbol):

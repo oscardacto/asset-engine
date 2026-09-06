@@ -1,0 +1,35 @@
+{
+  "name": "recorrido_hospedaje",
+  "slots": [
+    {
+      "duration_seconds": 3.0,
+      "name": "apertura",
+      "setting": "fachada"
+    },
+    {
+      "duration_seconds": 2.5,
+      "name": "umbral",
+      "setting": "entrada"
+    },
+    {
+      "duration_seconds": 4.0,
+      "name": "espacio",
+      "setting": "sala"
+    },
+    {
+      "duration_seconds": 3.0,
+      "name": "cocina",
+      "setting": "cocina"
+    },
+    {
+      "duration_seconds": 3.5,
+      "name": "descanso",
+      "setting": "alcoba"
+    },
+    {
+      "duration_seconds": 3.0,
+      "name": "cierre",
+      "setting": "balcon"
+    }
+  ]
+}

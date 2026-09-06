@@ -33,6 +33,7 @@ from media_optimizer.ingest.exif import (
     read_exif,
     read_exif_from_header,
 )
+from media_optimizer.ingest.filesystem import find_executable
 from media_optimizer.ingest.formats import (
     SUPPORTED_FORMATS,
     ImageFormat,
@@ -84,6 +85,7 @@ __all__ = [
     "detect_image_format",
     "detect_orientation",
     "find_duplicate_groups",
+    "find_executable",
     "is_supported_image",
     "load_catalog",
     "oriented_size",

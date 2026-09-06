@@ -182,3 +182,7 @@
 {"item":"HU-180","evento":"done","fecha":"2026-09-05","nota":"secuencia que propaga partial; la degradacion ya vivia en cada etapa"}
 {"item":"HU-184","evento":"done","fecha":"2026-09-05","nota":"run all: ingest+analyze+develop+select con un comando"}
 {"item":"HU-078","evento":"rework","fecha":"2026-09-05","origen":"validacion final","motivo":"reports.py al 73%, bajo el minimo de 80%: los generadores develop y selection sin pruebas propias","correccion":"8 pruebas dirigidas; 73% -> 98%","detectado_por":"bateria de cobertura del Pre-Flight"}
+{"item":"HU-154","evento":"adr_propuesto","fecha":"2026-09-05","adr":"ADR-006","decision":"subprocess de la stdlib + PySceneDetect por separado","dependencias_python_nuevas":0,"bloqueante":"el binario no esta instalado; la matriz de rutas de ADR-004 no se ha podido validar"}
+{"item":"HU-135","evento":"dev","fecha":"2026-09-05"}
+{"item":"HU-135","evento":"qa","fecha":"2026-09-05","criterios_total":16,"criterios_fallidos":0,"rework":false,"notas":"video/ al 100%; guardian de ADR-004 detecto shutil.which en codigo recien escrito y se corrigio"}
+{"item":"HU-135","evento":"done","fecha":"2026-09-05"}
