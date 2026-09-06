@@ -14,6 +14,7 @@ comparables.
 """
 
 import os
+import shutil
 import sys
 from collections.abc import Iterator
 from pathlib import Path
@@ -82,6 +83,15 @@ def is_directory(path: Path) -> bool:
 def is_file(path: Path) -> bool:
     """Indica si la ruta es un archivo."""
     return os.path.isfile(system_path(path))  # noqa: PTH113
+
+
+def find_executable(name: str) -> str | None:
+    """Ruta de un programa instalado en el sistema, o ``None`` si no está.
+
+    Buscar un ejecutable es recorrer carpetas del sistema, así que entra por aquí
+    como cualquier otro acceso al disco.
+    """
+    return shutil.which(name)
 
 
 def make_directory(path: Path) -> None:
