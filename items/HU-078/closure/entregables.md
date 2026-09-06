@@ -20,3 +20,11 @@ report selection      → 5 candidatas a portada, galería de 16 con gancho
 originales            → huella SHA-256 idéntica antes y después (fb1e874ea3450dcb)
 dos corridas          → los 4 JSON y las 16 derivadas, byte a byte idénticos
 ```
+
+## Defecto detectado en validación final y corregido
+`pipeline/reports.py` cayó a **73%**, bajo el 80% que exige el Pre-Flight: los generadores
+`develop` y `selection` se ejercitaban solo de refilón desde las pruebas de etapa, sin
+pruebas propias. Causa raíz: al agregar un generador se probó *la etapa que produce el
+dato*, no *el reporte que lo presenta*. Corregido con 8 pruebas dirigidas (texto, markdown,
+reproducibilidad byte a byte y mensaje accionable cuando falta la etapa previa).
+**`reports.py` 73% → 98%.**

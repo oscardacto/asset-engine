@@ -151,3 +151,76 @@ class TestReporteDeAnalisis:
     def test_sin_analisis_dice_que_ejecutar(self, workspace_con_catalogo: Path) -> None:
         with pytest.raises(InvalidInputError, match="run analyze"):
             generate_report("analysis", _peticion(workspace_con_catalogo))
+
+
+@pytest.fixture
+def workspace_completo(workspace_con_catalogo: Path) -> Path:
+    """Un lote que ya pasó por analyze, develop y select."""
+    peticion = StageRequest(workspace=workspace_con_catalogo, profile="hospedaje", source=None)
+    for etapa in ("analyze", "develop", "select"):
+        execute_stage(etapa, peticion)
+    return workspace_con_catalogo
+
+
+class TestReporteDeRevelado:
+    def test_muestra_el_plan_y_el_antes_despues_de_cada_foto(
+        self, workspace_completo: Path
+    ) -> None:
+        resultado = generate_report(
+            "develop", ReportRequest(workspace=workspace_completo, output_format="texto")
+        )
+
+        assert "clahe" in resultado.content
+        assert "->" in resultado.content
+        assert resultado.content.count("\n") > 3
+
+    def test_en_markdown_trae_la_tabla_con_el_delta(self, workspace_completo: Path) -> None:
+        peticion = ReportRequest(workspace=workspace_completo, output_format="markdown")
+        contenido = generate_report("develop", peticion).content
+
+        assert "| Salida | Brillo antes | Brillo después | Δ |" in contenido
+        assert "+" in contenido or "-" in contenido
+
+    def test_dos_veces_da_los_mismos_bytes(self, workspace_completo: Path) -> None:
+        peticion = ReportRequest(workspace=workspace_completo, output_format="texto")
+        assert generate_report("develop", peticion).content == (
+            generate_report("develop", peticion).content
+        )
+
+    def test_sin_revelado_dice_que_ejecutar(self, workspace_con_catalogo: Path) -> None:
+        with pytest.raises(InvalidInputError, match="run develop"):
+            generate_report(
+                "develop", ReportRequest(workspace=workspace_con_catalogo, output_format="texto")
+            )
+
+
+class TestReporteDeSeleccion:
+    def test_trae_portada_galeria_y_formatos(self, workspace_completo: Path) -> None:
+        contenido = generate_report(
+            "selection", ReportRequest(workspace=workspace_completo, output_format="texto")
+        ).content
+
+        assert "Candidatas a portada" in contenido
+        assert "Galería (orden narrativo)" in contenido
+        assert "Elegibles por formato" in contenido
+        for intencion in ("cover", "feed", "story"):
+            assert f"- {intencion}:" in contenido
+
+    def test_en_markdown_usa_encabezados(self, workspace_completo: Path) -> None:
+        peticion = ReportRequest(workspace=workspace_completo, output_format="markdown")
+        contenido = generate_report("selection", peticion).content
+
+        assert contenido.startswith("# Selección del lote")
+        assert "## Candidatas a portada" in contenido
+
+    def test_dos_veces_da_los_mismos_bytes(self, workspace_completo: Path) -> None:
+        peticion = ReportRequest(workspace=workspace_completo, output_format="texto")
+        assert generate_report("selection", peticion).content == (
+            generate_report("selection", peticion).content
+        )
+
+    def test_sin_seleccion_dice_que_ejecutar(self, workspace_con_catalogo: Path) -> None:
+        with pytest.raises(InvalidInputError, match="run select"):
+            generate_report(
+                "selection", ReportRequest(workspace=workspace_con_catalogo, output_format="texto")
+            )
