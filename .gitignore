@@ -82,3 +82,14 @@ items/*
 !items/HU-135
 !items/HU-154
 !items/HU-101
+
+# Medios del cliente: nunca entran al repo (charter 6.6). Las carpetas de insumos
+# estan en la lista blanca de items/, asi que un video dejado ahi se rastrearia
+# sin estas lineas. Los reportes de escenas si se conservan: son marcas de tiempo,
+# sin imagen ni datos personales.
+items/**/insumos/*.mp4
+items/**/insumos/*.mov
+items/**/insumos/*.mkv
+items/**/insumos/*.avi
+items/**/insumos/*.MP4
+items/**/insumos/*.MOV
