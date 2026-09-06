@@ -16,9 +16,15 @@ herramienta de video y el manejador de archivos de la biblioteca estándar.
 from dataclasses import dataclass
 from pathlib import Path
 
-from media_optimizer.core import Scene
+from scenedetect import ContentDetector, SceneManager, open_video
+from scenedetect.video_stream import VideoOpenFailure
+
+from media_optimizer.core import CorruptMediaError, Scene
+from media_optimizer.ingest import filesystem
 
 UMBRAL_POR_DEFECTO = 27.0
+
+_PRIMERA_ESCENA = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,7 +36,36 @@ class PySceneDetectAdapter:
     def detect(self, video: Path, *, threshold: float = UMBRAL_POR_DEFECTO) -> tuple[Scene, ...]:
         """Escenas del clip, en orden y sin solaparse.
 
+        Un clip sin cortes devuelve **una** escena que lo cubre entero, no cero:
+        que no haya cortes no significa que no haya material.
+
         Raises:
             CorruptMediaError: si el clip no se puede leer o decodificar.
         """
-        raise NotImplementedError
+        ruta = filesystem.system_path(video)
+        try:
+            flujo = open_video(ruta)
+            gestor = SceneManager()
+            gestor.add_detector(ContentDetector(threshold=threshold))
+            gestor.detect_scenes(flujo)
+            cortes = gestor.get_scene_list()
+            duracion = float(flujo.duration.seconds)
+        except (OSError, VideoOpenFailure, ValueError) as error:
+            raise CorruptMediaError(video, _causa(error)) from error
+
+        if not cortes:
+            return (Scene(index=_PRIMERA_ESCENA, start_seconds=0.0, end_seconds=duracion),)
+        return tuple(
+            Scene(
+                index=posicion,
+                start_seconds=float(inicio.seconds),
+                end_seconds=float(fin.seconds),
+            )
+            for posicion, (inicio, fin) in enumerate(cortes)
+        )
+
+
+def _causa(error: Exception) -> str:
+    """La primera línea del error, que es la que dice qué pasó."""
+    primera = str(error).splitlines()
+    return primera[0].strip() if primera else "el clip no se pudo abrir"

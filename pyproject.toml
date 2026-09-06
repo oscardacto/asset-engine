@@ -79,6 +79,12 @@ python_version = "3.12"
 strict = true
 files = ["src"]
 
+# scenedetect no publica tipos. El silencio se limita a esa importacion: lo que
+# entra y sale del adaptador si esta tipado, y el dominio nunca la ve.
+[[tool.mypy.overrides]]
+module = ["scenedetect.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"

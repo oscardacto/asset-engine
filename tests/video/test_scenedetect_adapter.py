@@ -1,8 +1,8 @@
-"""Pruebas del detector de escenas — escritas antes que la implementación.
+"""Pruebas del detector de escenas — se escribieron antes que la implementación.
 
-En simple: describen qué debe hacer el detector antes de que exista. Están
-marcadas como fallo esperado, así que la batería sigue en verde y el día que
-alguien lo implemente estas pruebas avisan de que ya se pueden desmarcar.
+En simple: comprueban que un clip con un corte se parte en dos, que uno sin
+cortes sigue siendo una escena entera, que un clip ilegible aparta ese asset sin
+tumbar el lote, y que funciona con rutas que la librería no encuentra sola.
 
 Los videos de prueba se generan en el momento con la herramienta externa, así que
 no entra ni un medio real al repositorio.
@@ -22,8 +22,6 @@ from media_optimizer.video.scenedetect_adapter import UMBRAL_POR_DEFECTO, PyScen
 
 _SIN_BINARIO = not is_available()
 _RUTA_LARGA = ("y" * 40,) * 8
-
-pendiente = pytest.mark.xfail(strict=True, reason="el detector todavía no está implementado")
 
 
 def _generar_clip(destino: Path, *, con_corte: bool = True) -> None:
@@ -83,9 +81,8 @@ class TestContratoDelPuerto:
 
 @pytest.mark.skipif(_SIN_BINARIO, reason="el binario de video no está instalado")
 class TestDeteccionSobreClipsReales:
-    """Rojo a propósito: describen el comportamiento antes de implementarlo."""
+    """Se escribieron antes que el detector; ahora corren contra la implementación."""
 
-    @pendiente
     def test_un_clip_con_un_corte_produce_dos_escenas(self, tmp_path: Path) -> None:
         clip = tmp_path / "con_corte.mp4"
         _generar_clip(clip)
@@ -96,14 +93,12 @@ class TestDeteccionSobreClipsReales:
         assert escenas[0].index == 0
         assert escenas[1].start_seconds == pytest.approx(escenas[0].end_seconds, abs=0.1)
 
-    @pendiente
     def test_un_clip_sin_cortes_produce_una_sola_escena(self, tmp_path: Path) -> None:
         clip = tmp_path / "sin_corte.mp4"
         _generar_clip(clip, con_corte=False)
 
         assert len(PySceneDetectAdapter().detect(clip, threshold=UMBRAL_POR_DEFECTO)) == 1
 
-    @pendiente
     def test_las_escenas_salen_en_orden_y_sin_solaparse(self, tmp_path: Path) -> None:
         clip = tmp_path / "orden.mp4"
         _generar_clip(clip)
@@ -114,7 +109,6 @@ class TestDeteccionSobreClipsReales:
         for anterior, siguiente in pairwise(escenas):
             assert anterior.end_seconds <= siguiente.start_seconds
 
-    @pendiente
     def test_el_mismo_clip_da_siempre_las_mismas_escenas(self, tmp_path: Path) -> None:
         """El pipeline promete la misma salida ante la misma entrada."""
         clip = tmp_path / "determinista.mp4"
@@ -125,7 +119,6 @@ class TestDeteccionSobreClipsReales:
             clip, threshold=UMBRAL_POR_DEFECTO
         )
 
-    @pendiente
     def test_un_umbral_mas_bajo_no_encuentra_menos_cortes(self, tmp_path: Path) -> None:
         clip = tmp_path / "umbral.mp4"
         _generar_clip(clip)
@@ -135,7 +128,6 @@ class TestDeteccionSobreClipsReales:
         conservador = detector.detect(clip, threshold=90.0)
         assert len(sensible) >= len(conservador)
 
-    @pendiente
     def test_funciona_con_una_ruta_larga(self, tmp_path: Path) -> None:
         """Medido: la librería no encuentra el video si la ruta no se adapta."""
         clip = tmp_path.joinpath(*_RUTA_LARGA) / "largo.mp4"
@@ -144,7 +136,6 @@ class TestDeteccionSobreClipsReales:
 
         assert PySceneDetectAdapter().detect(clip, threshold=UMBRAL_POR_DEFECTO)
 
-    @pendiente
     def test_un_clip_ilegible_degrada_ese_asset(self, tmp_path: Path) -> None:
         roto = tmp_path / "roto.mp4"
         filesystem.write_bytes(roto, b"esto no es un video")
@@ -152,7 +143,6 @@ class TestDeteccionSobreClipsReales:
         with pytest.raises(CorruptMediaError):
             PySceneDetectAdapter().detect(roto, threshold=UMBRAL_POR_DEFECTO)
 
-    @pendiente
     def test_un_clip_inexistente_degrada_ese_asset(self, tmp_path: Path) -> None:
         with pytest.raises(CorruptMediaError):
             PySceneDetectAdapter().detect(tmp_path / "no_existe.mp4", threshold=UMBRAL_POR_DEFECTO)
