@@ -22,12 +22,23 @@ from media_optimizer.core.ports import SceneDetectorPort
 from media_optimizer.core.quality_report import QualityReport, Verdict
 from media_optimizer.core.scene import Scene
 from media_optimizer.core.scene_score import SceneScore
+from media_optimizer.core.scene_selection import (
+    UMBRALES_POR_DEFECTO,
+    DiscardReason,
+    SceneThresholds,
+    SceneVerdict,
+    judge_scene,
+    kept_scenes,
+    select_scenes,
+)
 from media_optimizer.core.stage_report import ReproducibleStageSummary, StageReport
 from media_optimizer.core.transform import ParamValue, Transform, TransformHistory
 
 __all__ = [
+    "UMBRALES_POR_DEFECTO",
     "BusinessProfile",
     "CorruptMediaError",
+    "DiscardReason",
     "InvalidInputError",
     "MediaAsset",
     "MediaOptimizerError",
@@ -41,11 +52,16 @@ __all__ = [
     "Scene",
     "SceneDetectorPort",
     "SceneScore",
+    "SceneThresholds",
+    "SceneVerdict",
     "ScoringWeights",
     "StageReport",
     "Transform",
     "TransformHistory",
     "Verdict",
+    "judge_scene",
+    "kept_scenes",
+    "select_scenes",
     "stable_order",
     "stable_order_by",
     "stable_text",
