@@ -18,7 +18,9 @@ from media_optimizer.core.determinism import (
 )
 from media_optimizer.core.errors import CorruptMediaError, InvalidInputError, MediaOptimizerError
 from media_optimizer.core.media_asset import MediaAsset, MediaType, Orientation
+from media_optimizer.core.ports import SceneDetectorPort
 from media_optimizer.core.quality_report import QualityReport, Verdict
+from media_optimizer.core.scene import Scene
 from media_optimizer.core.stage_report import ReproducibleStageSummary, StageReport
 from media_optimizer.core.transform import ParamValue, Transform, TransformHistory
 
@@ -35,6 +37,8 @@ __all__ = [
     "ParamValue",
     "QualityReport",
     "ReproducibleStageSummary",
+    "Scene",
+    "SceneDetectorPort",
     "ScoringWeights",
     "StageReport",
     "Transform",

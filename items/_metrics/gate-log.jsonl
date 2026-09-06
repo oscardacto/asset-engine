@@ -192,3 +192,5 @@
 {"item":"HU-154","evento":"adr_aceptado","fecha":"2026-09-06","adr":"ADR-006","ffmpeg_version":"9.0.1-essentials_build-www.gyan.dev","validacion":"matriz de rutas de ADR-004 verificada contra el binario real","tests_integracion":"28 passed, 0 skipped","suite_global":"699 passed, 1 skipped","asuncion_confirmada":"A-3: ffmpeg acepta la forma extendida de ruta"}
 {"item":"HU-154","evento":"qa","fecha":"2026-09-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"notas":"CA-8 (matriz de rutas) paso contra ffmpeg 9.0.1; E5 habilitada"}
 {"item":"HU-154","evento":"done","fecha":"2026-09-06"}
+{"item":"HU-101","evento":"gate_apertura","fecha":"2026-09-06","epica":"E5","habilitada_por":"ADR-006 Aceptado 2026-09-06","dependencia_nueva":"scenedetect 0.7.1","hallazgos_previos":["conflicto de empaquetado cv2 con ADR-002, resuelto con override medido","la libreria no abre videos en rutas largas sin la capa de ADR-004"]}
+{"item":"HU-101","evento":"gate_spec","fecha":"2026-09-06","intento":1,"confianza":89,"bloqueantes":0,"importantes":1,"informativas":1,"resultado":"LISTA_PARA_DEV"}

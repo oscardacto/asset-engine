@@ -14,6 +14,10 @@ from media_optimizer.video.ffmpeg_executor import (
     probe_filtergraph,
     run,
 )
+from media_optimizer.video.scenedetect_adapter import (
+    UMBRAL_POR_DEFECTO,
+    PySceneDetectAdapter,
+)
 from media_optimizer.video.templates import (
     NarrativeSlot,
     ReelTemplate,
@@ -38,9 +42,11 @@ __all__ = [
     "CUADROS_POR_SEGUNDO",
     "NORMALIZAR_TIEMPOS_AUDIO",
     "NORMALIZAR_TIEMPOS_VIDEO",
+    "UMBRAL_POR_DEFECTO",
     "CropBox",
     "FfmpegResult",
     "NarrativeSlot",
+    "PySceneDetectAdapter",
     "ReelTemplate",
     "SlotAssignment",
     "Timeline",
