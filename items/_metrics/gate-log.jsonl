@@ -186,3 +186,6 @@
 {"item":"HU-135","evento":"dev","fecha":"2026-09-05"}
 {"item":"HU-135","evento":"qa","fecha":"2026-09-05","criterios_total":16,"criterios_fallidos":0,"rework":false,"notas":"video/ al 100%; guardian de ADR-004 detecto shutil.which en codigo recien escrito y se corrigio"}
 {"item":"HU-135","evento":"done","fecha":"2026-09-05"}
+{"item":"HU-154","evento":"gate_spec","fecha":"2026-09-05","intento":1,"confianza":88,"bloqueantes":1,"importantes":0,"informativas":0,"resultado":"LISTA_PARA_DEV_PARCIAL","regularizacion_post_merge":true,"nota":"spec escrita despues del merge c92074d; la capa de construccion pasa, la adopcion de la cadena queda bloqueada por CA-8 (matriz de rutas sin validar, binario no instalado)","detectado_por":"auditoria de gobernanza 2026-09-05"}
+{"item":"HU-135","evento":"gate_spec","fecha":"2026-09-05","intento":1,"confianza":90,"bloqueantes":0,"importantes":0,"informativas":1,"resultado":"LISTA_PARA_DEV","regularizacion_post_merge":true,"nota":"spec escrita despues del merge c92074d y del cierre DONE; incumplio la regla de oro 1","detectado_por":"auditoria de gobernanza 2026-09-05"}
+{"item":"HU-154","evento":"dev","fecha":"2026-09-05","regularizacion_post_merge":true}

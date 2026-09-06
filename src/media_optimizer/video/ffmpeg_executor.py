@@ -32,6 +32,7 @@ NORMALIZAR_TIEMPOS_AUDIO = "asetpts=PTS-STARTPTS"
 _TIEMPO_LIMITE_SEGUNDOS = 900
 _DURACION_DE_PRUEBA = "5"
 _FUENTE_SINTETICA = "nullsrc=s=1080x1920:r=30"
+_ETIQUETA_VERSION = "version"
 
 # Banderas que hacen reproducible cualquier invocación. No son opcionales.
 _DETERMINISMO = (
@@ -50,6 +51,7 @@ class FfmpegResult:
     ok: bool
     stderr: str
     command: tuple[str, ...]
+    stdout: str = ""
 
     @property
     def failure_reason(self) -> str:
@@ -61,6 +63,39 @@ class FfmpegResult:
 def is_available() -> bool:
     """Indica si el binario de video está instalado en esta máquina."""
     return filesystem.find_executable(BINARIO) is not None
+
+
+def detect_version() -> str | None:
+    """Versión del binario instalado, o ``None`` si no está o no responde.
+
+    La primera línea que la herramienta imprime trae su versión; de ahí sale la
+    palabra que va justo después de ``version``.
+    """
+    resultado = run((BINARIO, "-version"))
+    if not resultado.ok:
+        return None
+    primera = resultado.stdout.splitlines()[0] if resultado.stdout else ""
+    partes = primera.split()
+    if _ETIQUETA_VERSION not in partes:
+        return None
+    siguiente = partes.index(_ETIQUETA_VERSION) + 1
+    return partes[siguiente] if siguiente < len(partes) else None
+
+
+def log_version() -> str | None:
+    """Deja la versión del binario en el rastro y la devuelve.
+
+    Queda registrada porque la herramienta es externa y evoluciona por su cuenta:
+    si un día su comportamiento cambia, el rastro dice con cuál se produjo cada
+    salida.
+    """
+    version = detect_version()
+    registro = get_logger("video")
+    if version is None:
+        registro.warning("no se pudo determinar la versión de la herramienta de video")
+    else:
+        registro.info("herramienta de video detectada", extra={"ffmpeg_version": version})
+    return version
 
 
 def normalized_segment(filtros: Sequence[str], *, con_audio: bool = False) -> str:
@@ -158,6 +193,7 @@ def run(command: Sequence[str]) -> FfmpegResult:
         ok=completado.returncode == 0,
         stderr=completado.stderr or "",
         command=tuple(command),
+        stdout=completado.stdout or "",
     )
     if not resultado.ok:
         registro.warning(

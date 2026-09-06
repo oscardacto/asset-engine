@@ -7,6 +7,8 @@ vez de caerse. Las pruebas de comando no ejecutan nada: comparan lo que se iba a
 pedir. Solo la prueba de integración invoca el binario, y únicamente si existe.
 """
 
+import io
+import json
 import subprocess
 from pathlib import Path
 from unittest.mock import patch
@@ -15,6 +17,7 @@ import pytest
 
 from media_optimizer.core import CorruptMediaError
 from media_optimizer.ingest import filesystem
+from media_optimizer.logs import configure_logging
 from media_optimizer.video import (
     NORMALIZAR_TIEMPOS_AUDIO,
     NORMALIZAR_TIEMPOS_VIDEO,
@@ -22,7 +25,9 @@ from media_optimizer.video import (
     build_command,
     build_probe_command,
     degrade,
+    detect_version,
     is_available,
+    log_version,
     normalized_segment,
     probe_filtergraph,
     run,
@@ -176,3 +181,51 @@ class TestIntegracionConElBinarioReal:
         resultado = run(comando)
         assert resultado.ok, resultado.failure_reason
         assert filesystem.exists(destino)
+
+
+class TestVersionDeLaHerramienta:
+    """El ADR promete registrar con qué versión se produjo cada salida."""
+
+    _PRIMERA_LINEA = (
+        "ffmpeg version 7.1.1-full_build-www.gyan.dev Copyright (c) 2000-2025 the FFmpeg developers"
+    )
+
+    def _con_salida(self, texto: str, codigo: int = 0) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args=["ffmpeg"], returncode=codigo, stdout=texto, stderr=""
+        )
+
+    def test_extrae_la_version_de_la_primera_linea(self) -> None:
+        with patch("subprocess.run", return_value=self._con_salida(self._PRIMERA_LINEA)):
+            assert detect_version() == "7.1.1-full_build-www.gyan.dev"
+
+    def test_si_la_herramienta_no_responde_no_inventa_version(self) -> None:
+        with patch("subprocess.run", side_effect=FileNotFoundError):
+            assert detect_version() is None
+
+    def test_una_salida_inesperada_no_rompe_la_deteccion(self) -> None:
+        with patch("subprocess.run", return_value=self._con_salida("algo que no es una versión")):
+            assert detect_version() is None
+
+    def test_una_salida_vacia_no_rompe_la_deteccion(self) -> None:
+        with patch("subprocess.run", return_value=self._con_salida("")):
+            assert detect_version() is None
+
+    def test_la_palabra_version_sin_nada_detras_no_rompe(self) -> None:
+        with patch("subprocess.run", return_value=self._con_salida("ffmpeg version")):
+            assert detect_version() is None
+
+    def test_la_version_queda_en_el_rastro(self) -> None:
+        salida = io.StringIO()
+        configure_logging(stream=salida)
+        with patch("subprocess.run", return_value=self._con_salida(self._PRIMERA_LINEA)):
+            assert log_version() == "7.1.1-full_build-www.gyan.dev"
+        evento = json.loads(salida.getvalue().splitlines()[0])
+        assert evento["ffmpeg_version"] == "7.1.1-full_build-www.gyan.dev"
+
+    def test_si_no_hay_version_lo_advierte_en_el_rastro(self) -> None:
+        salida = io.StringIO()
+        configure_logging(stream=salida)
+        with patch("subprocess.run", side_effect=FileNotFoundError):
+            assert log_version() is None
+        assert "no se pudo determinar" in salida.getvalue()
