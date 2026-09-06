@@ -1,6 +1,6 @@
 # HANDOFF — estado del proyecto
 
-> Actualizado: 2026-09-06, al cerrar HU-103.
+> Actualizado: 2026-09-06, al cerrar HU-104.
 > Este archivo se reescribe al cerrar cada bloque. Dice **dónde está el proyecto** y
 > **qué se puede empezar mañana sin releer nada**.
 
@@ -10,11 +10,11 @@
 
 | | |
 |---|---|
-| Commit | ver §6 — actualizado en el merge de HU-103 |
+| Commit | ver §7 — actualizado en el merge de HU-104 |
 | Árbol de trabajo | limpio · pusheado |
-| HUs cerradas | **59** |
-| Tests | **780 passed · 1 skipped** (el omitido es comportamiento POSIX en Windows) |
-| Cobertura | **99%** global · 100% en `core/` y `ranking/` |
+| HUs cerradas | **60** |
+| Tests | **803 passed · 1 skipped** (el omitido es comportamiento POSIX en Windows) |
+| Cobertura | **99%** global · 100% en `core/`, `ranking/` y `video/framing.py` |
 | `ruff check` · `ruff format --check` · `mypy src/` | los tres en verde |
 
 ### Entorno
@@ -31,7 +31,26 @@
 
 ---
 
-## 2. Contratos y puertos disponibles
+## 2. Lo que se sabe del material del cliente — **léelo antes de diseñar nada de video**
+
+Tres hechos medidos sobre los 7 videos reales, que ya cambiaron dos decisiones:
+
+| Hecho | Medida | Consecuencia |
+|---|---|---|
+| **El celular graba 9:16 nativo** | 6 de 7 clips son 1080×1920; el otro, 720×1280 | **Ningún clip recorta ancho.** El encuadre solo escala. La ruta de material apaisado funciona y está probada, pero con clips sintéticos — no se ejercita con este cliente |
+| **La estabilidad es baja y su escala es estrecha** | 0.000 – **0.404** en 19 escenas | Un umbral de 0.5 —permisivo en abstracto— descartaría el lote entero. El adoptado es 0.15 |
+| **La exposición es buena** | 0.799 – 0.976 | Nada se descarta por luz. El problema del cliente es el pulso, no la iluminación |
+
+**Regla que sale de aquí: ningún umbral entra sin haber visto la distribución real de la
+métrica sobre la que se aplica.** Un test unitario con dos casos separados pasa igual aunque
+el umbral vacíe el lote en producción.
+
+**Y una advertencia de inversión:** antes de construir encuadre inteligente o cualquier cosa
+que resuelva material horizontal, comprobar si ese material existe. Hoy no.
+
+---
+
+## 3. Contratos y puertos disponibles
 
 ### `core/` — dominio puro, sin IO
 
@@ -44,18 +63,9 @@
 | `StageReport` · `ReproducibleStageSummary` | Observabilidad, con lo medible separado de lo reproducible | 168 |
 | `Scene` | Un tramo de video entre dos cortes | 101 |
 | `SceneScore` | Calificación de una escena: componentes + nota general | 102 |
-| **`DiscardReason` · `SceneThresholds` · `SceneVerdict`** | **Qué escenas sirven y por qué no las otras** | **103** |
+| `DiscardReason` · `SceneThresholds` · `SceneVerdict` | Qué escenas sirven y por qué no las otras | 103 |
 | `MediaOptimizerError` · `CorruptMediaError` · `InvalidInputError` | Jerarquía de fallos | 161 |
 | `stable_text` · `stable_order` · `stable_order_by` · `stable_unique` | Determinismo | 169 |
-
-**Nuevo en `core/scene_selection.py`** — dominio puro, sin ffmpeg ni OpenCV:
-
-```
-judge_scene(scene, score, thresholds)   -> SceneVerdict     una escena
-select_scenes(scenes, scores, thresh)   -> tuple[SceneVerdict, ...]   el lote
-kept_scenes(scenes, scores, thresholds) -> tuple[Scene, ...]  solo las supervivientes
-UMBRALES_POR_DEFECTO                     SceneThresholds ya calibrado con material real
-```
 
 ### `core/ports/`
 
@@ -65,9 +75,26 @@ UMBRALES_POR_DEFECTO                     SceneThresholds ya calibrado con materi
 
 ### `video/`
 
-`PySceneDetectAdapter` · `score_scene` / `score_scenes` · `frame_to_vertical` /
-`vertical_filter_chain` · `ReelTemplate` / `NarrativeSlot` / `Timeline` / `assign_slots` ·
-`build_command` / `probe_filtergraph` / `run` / `degrade` / `detect_version`
+| Módulo | Qué expone |
+|---|---|
+| `ffmpeg_executor` | `build_command` · `probe_filtergraph` · `run` · `degrade` · `detect_version` · `is_available` |
+| `transforms` | `frame_to_vertical` · `vertical_filter_chain` · `VerticalFraming` · `CropBox` |
+| **`framing`** | **`read_dimensions` · `build_crop_command` · `crop_to_vertical`** |
+| `scenedetect_adapter` | `PySceneDetectAdapter` |
+| `scene_scoring` | `score_scene` · `score_scenes` |
+| `templates` | `ReelTemplate` · `NarrativeSlot` · `Timeline` · `assign_slots` · `template_from_data` |
+
+**Nuevo en `video/framing.py`** (HU-104):
+
+```
+read_dimensions(video)                          -> (ancho, alto)
+build_crop_command(video, framing, output, *, offset_x, fps) -> tuple[str, ...]   puro
+crop_to_vertical(video, output, *, offset_x, fps)            -> VerticalFraming   ejecuta
+```
+
+`crop_to_vertical` **devuelve el encuadre aplicado**, no un booleano: HU-110 necesitará
+explicar qué parte del material se recortó. El desplazamiento se **acota al margen** en vez
+de fallar, para que un parámetro mal puesto no interrumpa un lote a la mitad.
 
 ### `ranking/`
 
@@ -83,69 +110,62 @@ report inventory · report analysis · report develop · report selection
 
 ---
 
-## 3. Lo aprendido sobre los umbrales de video — **léelo antes de tocar ninguno**
+## 4. Estado de la épica E5 (video)
 
-La escala de estabilidad **no se comporta como una escala de 0 a 1 normal** cuando el
-material se graba a pulso. Sobre los 7 videos del cliente (19 escenas):
-
-| Métrica | Rango real | Qué implica |
-|---|---|---|
-| **Estabilidad** | **0.000 – 0.404** | Un mínimo de 0.5 —que en abstracto suena permisivo— **descartaría las 19 escenas**. El valor adoptado es **0.15** |
-| Exposición | 0.799 – 0.976 | Nada se descarta hoy por luz, y es correcto: el problema del cliente es el pulso |
-| Duración | 5 escenas bajo 1,5 s | Paneo cruzando el detector, no cortes reales |
-
-Con `UMBRALES_POR_DEFECTO` sobrevive el **42%** (8 de 19). Causas: `unstable` 10,
-`too_short` 5, `poor_exposure` 0.
-
-**Regla que sale de aquí: ningún umbral entra sin haber visto la distribución real de la
-métrica sobre la que se aplica.** Un test unitario con dos casos separados pasa igual aunque
-el umbral vacíe el lote entero en producción.
-
-### Y una propiedad que conviene no romper
-
-Los umbrales de descarte van **por componente**, nunca sobre la nota general. Esa nota
-promedia solo los componentes disponibles, así que **cambiará de valor cuando entre la
-nitidez** (HU-023) sin que nadie toque nada. Dos tests de HU-103 fijan la propiedad: si
-alguien mueve el criterio a la nota general, fallan.
+| HU | Qué es | Estado |
+|----|--------|--------|
+| 101 | Detección de escenas | ✅ DONE |
+| 102 | Score técnico por escena | ✅ DONE |
+| 103 | Descarte con causas | ✅ DONE |
+| 104 | Crop 9:16 | ✅ DONE |
+| **105** | **Secuenciado narrativo según plantilla** | **lista, con reserva — ver §5** |
+| **106** | **Recorte de clips a duración objetivo** | **lista, sin reservas** |
+| 107 | Ensamblado del reel con transiciones | depende de 106 |
+| 109 | Export 1080×1920 con codec por plataforma | depende de 107 |
+| 110 | CLI `run reel` + reporte de escenas | depende de 109 |
+| 100 | Ingesta de clips con streaming | no iniciada — ver B-2 |
 
 ---
 
-## 4. Siguiente HU lista para DEV: **HU-104** o **HU-105**
+## 5. Siguiente HU: **HU-106** antes que HU-105
 
-| HU | Qué es | Dependencia | Estado |
-|----|--------|-------------|--------|
-| **HU-104** | Crop 9:16 de material horizontal (encuadre centrado configurable) | HU-101 ✅ | **lista** — la aritmética ya existe en `video.frame_to_vertical`, falta aplicarla a clips |
-| **HU-105** | Secuenciado narrativo según plantilla del perfil | HU-103 ✅ · HU-135 ✅ | **lista** — `kept_scenes` y `assign_slots` ya existen; es cablearlos |
+**Recomendación: HU-106** (recorte de clips a duración objetivo). Depende de HU-105 en el
+backlog, pero su núcleo —cortar un tramo de clip a una duración— no necesita el guion: se
+puede construir sobre `Scene` y quedar listo para cuando el secuenciado lo llame.
 
-**HU-105 es la que más avanza el producto**: junta el descarte (HU-103) con el guion
-(HU-135) y produce la línea de tiempo del reel. Ojo con un detalle: `assign_slots` reparte
-por **ambiente**, y el etiquetado de ambientes (HU-032) no existe, así que hoy todo tramo que
-exija ambiente queda como hueco. Con material sin etiquetar, el guion se llenará solo en los
-tramos sin ambiente declarado.
+**HU-105 está lista técnicamente pero su valor está bloqueado.** `kept_scenes` y
+`assign_slots` ya existen y es cablearlos, pero `assign_slots` reparte **por ambiente**, y el
+etiquetado de ambientes (HU-032) no existe. Con material sin etiquetar, todo tramo que exija
+ambiente queda como hueco: el guion del perfil `hospedaje` tiene 6 tramos y **los 6 declaran
+ambiente**, así que hoy produciría una línea de tiempo completamente vacía.
+
+Hacer HU-105 ahora daría código correcto que no puede demostrarse útil. **Si se prioriza,
+antes conviene HU-032.**
 
 ---
 
-## 5. Bloqueos y deuda declarada
+## 6. Bloqueos y deuda declarada
 
 | # | Qué | Impacto |
 |---|---|---|
 | **B-1** | **HU-023 (`ADR` de métrica de nitidez) no iniciada**, y el backlog **no la declara como dependencia de HU-102** aunque su enunciado la pida | La nitidez quedó fuera de HU-102 y de las causas de HU-103. Inconsistencia del backlog, anotada sin resolver |
-| **B-2** | HU-100 (ingesta de clips con streaming) no iniciada | HU-102 muestrea cuadros por su cuenta. Cuando HU-100 llegue, revisar si el muestreo debe pasar por ella |
-| **B-3** | HU-032 (etiquetado de ambientes) no iniciada | `assign_slots` deja como hueco todo tramo que exija ambiente. Bloquea el valor real de HU-105 |
+| **B-2** | HU-100 (ingesta de clips con streaming) no iniciada | HU-102 muestrea cuadros y HU-104 lee dimensiones, ambos por su cuenta. Cuando HU-100 llegue, revisar si esas lecturas deben pasar por ella |
+| **B-3** | HU-032 (etiquetado de ambientes) no iniciada | **Bloquea el valor de HU-105**: los 6 tramos del guion `hospedaje` declaran ambiente, así que la línea de tiempo saldría vacía |
 | D-1 | `core/ports/` tiene un solo puerto y una sola implementación | Si al llegar HU-105 no aporta desacoplamiento real, el puerto cabe en `core/scene.py` |
 | D-2 | `video/scene_scoring.py` al 98% | La línea sin cubrir es el caso en que ningún cuadro tiene contiguo — inalcanzable con clips válidos |
 | D-3 | Umbral de detección de escenas en 27.0 | Sobre el video largo produce 5 escenas de menos de 1,5 s. Con 40 desaparecen. Calibración: HU-133 |
-| D-4 | Los umbrales de descarte son un punto de partida medido, no calibrado | HU-133 los fija en el perfil. Si el negocio quiere conservar más del 42%, el parámetro a mover es la estabilidad |
+| D-4 | Los umbrales de descarte son un punto de partida medido, no calibrado | HU-133 los fija en el perfil. Con los actuales sobrevive el 42% (8 de 19) |
+| D-5 | La salida de `crop_to_vertical` no está afinada para plataforma | Codec, bitrate y perfil de color son HU-109 |
 
 ---
 
-## 6. Cómo retomar
+## 7. Cómo retomar
 
 ```bash
 git checkout develop && git pull
 export PATH="$PATH:/c/ffmpeg/ffmpeg-9.0.1-essentials_build/bin"
 uv sync
-uv run pytest            # 780 passed, 1 skipped
+uv run pytest            # 803 passed, 1 skipped
 uv run ruff check . && uv run ruff format --check . && uv run mypy src/
 ```
 
