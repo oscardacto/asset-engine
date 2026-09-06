@@ -197,3 +197,8 @@
 {"item":"HU-101","evento":"dev","fecha":"2026-09-06","notas":"adaptador implementado; los 8 tests en rojo declarado pasan a verde y se desmarcan"}
 {"item":"HU-101","evento":"qa","fecha":"2026-09-06","criterios_total":12,"criterios_fallidos":0,"rework":false,"cobertura_adaptador":"100%","cobertura_total":"99%","tests":"721 passed, 1 skipped","notas":"ciclo TDD verificable: 8 tests en xfail estricto pasaron a verde y el modo estricto obligo a desmarcarlos"}
 {"item":"HU-101","evento":"done","fecha":"2026-09-06"}
+{"item":"HU-102","evento":"gate_spec","fecha":"2026-09-06","intento":1,"confianza":87,"bloqueantes":0,"resultado":"LISTA_PARA_DEV","nota":"nitidez fuera de alcance: HU-023 es un ADR sin cerrar y el backlog no la declara como dependencia"}
+{"item":"HU-102","evento":"dev","fecha":"2026-09-06"}
+{"item":"HU-102","evento":"rework","fecha":"2026-09-06","origen":"validacion con material real","motivo":"la estabilidad comparaba muestras separadas ~1s y daba 0.000 en casi todas las escenas: medía paneo, no temblor","correccion":"comparar cada cuadro con el contiguo; 10 valores distintos en 19 escenas","detectado_por":"7 videos del cliente"}
+{"item":"HU-102","evento":"qa","fecha":"2026-09-06","criterios_total":7,"criterios_fallidos":0,"rework":true,"cobertura_total":"99%","tests":"752 passed, 1 skipped"}
+{"item":"HU-102","evento":"done","fecha":"2026-09-06"}

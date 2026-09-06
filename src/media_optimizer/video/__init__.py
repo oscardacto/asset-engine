@@ -14,6 +14,11 @@ from media_optimizer.video.ffmpeg_executor import (
     probe_filtergraph,
     run,
 )
+from media_optimizer.video.scene_scoring import (
+    MUESTRAS_POR_ESCENA,
+    score_scene,
+    score_scenes,
+)
 from media_optimizer.video.scenedetect_adapter import (
     UMBRAL_POR_DEFECTO,
     PySceneDetectAdapter,
@@ -40,6 +45,7 @@ __all__ = [
     "ALTO_VERTICAL",
     "ANCHO_VERTICAL",
     "CUADROS_POR_SEGUNDO",
+    "MUESTRAS_POR_ESCENA",
     "NORMALIZAR_TIEMPOS_AUDIO",
     "NORMALIZAR_TIEMPOS_VIDEO",
     "UMBRAL_POR_DEFECTO",
@@ -62,6 +68,8 @@ __all__ = [
     "normalized_segment",
     "probe_filtergraph",
     "run",
+    "score_scene",
+    "score_scenes",
     "template_from_data",
     "vertical_filter_chain",
 ]

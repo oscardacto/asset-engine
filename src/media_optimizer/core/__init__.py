@@ -21,6 +21,7 @@ from media_optimizer.core.media_asset import MediaAsset, MediaType, Orientation
 from media_optimizer.core.ports import SceneDetectorPort
 from media_optimizer.core.quality_report import QualityReport, Verdict
 from media_optimizer.core.scene import Scene
+from media_optimizer.core.scene_score import SceneScore
 from media_optimizer.core.stage_report import ReproducibleStageSummary, StageReport
 from media_optimizer.core.transform import ParamValue, Transform, TransformHistory
 
@@ -39,6 +40,7 @@ __all__ = [
     "ReproducibleStageSummary",
     "Scene",
     "SceneDetectorPort",
+    "SceneScore",
     "ScoringWeights",
     "StageReport",
     "Transform",
