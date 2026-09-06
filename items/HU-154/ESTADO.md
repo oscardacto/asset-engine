@@ -1,1 +1,1 @@
-SPEC — 2026-09-05 — @oscardacto (ADR-006 Propuesto: falta instalar el binario y validar la matriz de rutas)
+DONE — 2026-09-06 — @oscardacto (ADR-006 Aceptado: matriz de rutas validada contra el binario real)

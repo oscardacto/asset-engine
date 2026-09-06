@@ -1,6 +1,6 @@
 # ADR-006 — Stack de video: ffmpeg por subprocess + PySceneDetect
 
-- **Estado:** **Propuesto** — no puede aceptarse todavía; ver «Qué falta para pasar a Aceptado»
+- **Estado:** **Aceptado** — 2026-09-06, tras validar la cadena contra el binario real
 - **Fecha:** 2026-09-05
 - **Origen:** HU-154 (backlog E7) · habilita HU-003, HU-014, HU-100–112, HU-167
 - **Decisores:** equipo técnico (@oscardacto) · análisis: Claude (orquestador-ejecutor ASDD)
@@ -93,14 +93,25 @@ exactamente el error que ADR-004 nació para evitar.
 - El grafo de filtros es texto, y el verificador de tipos no lo entiende → se compensa con la
   validación silenciosa contra el binario real.
 
-## Qué falta para pasar a Aceptado
+## Validación que habilitó la aceptación
 
-1. **Instalar ffmpeg en la máquina de referencia.** Hoy no está: `ffmpeg -version` no responde.
-2. **Validar la cadena contra la matriz de rutas de ADR-004** — la condición que HU-154 exige
-   literalmente. Concretamente: comprobar si ffmpeg lee y escribe con la forma extendida de
-   Windows, con nombres largos y con nombres que coinciden con dispositivos del sistema.
-   El test condicional de esta HU ejecuta esa comprobación en cuanto el binario exista.
-3. Aprobación del equipo para incorporar el binario y, cuando llegue HU-101, `PySceneDetect`.
+**Fecha: 2026-09-06.** El binario quedó instalado en la máquina de referencia y la condición
+que HU-154 exige —*"validar la cadena contra la matriz de compatibilidad de rutas de
+ADR-004 antes de adoptarla"*— se ejecutó contra él.
 
-**Mientras 1 y 2 no se cumplan, ninguna HU de E5 puede cerrarse**: se estaría construyendo
-sobre una suposición de compatibilidad de rutas que el propio backlog prohíbe asumir.
+| Comprobación | Resultado |
+|---|---|
+| Versión detectada por la capa | `9.0.1-essentials_build-www.gyan.dev` |
+| Ruta resuelta vía `filesystem.find_executable` | `C:\ffmpeg\ffmpeg-9.0.1-essentials_build\bin\ffmpeg.EXE` |
+| Un grafo de filtros válido pasa la prueba silenciosa | ✅ |
+| Un grafo inválido se rechaza con su causa | ✅ |
+| **El binario acepta la forma extendida de ruta y escribe el archivo** | ✅ **la condición del backlog** |
+| `tests/video/test_ffmpeg_executor.py` | **28 passed, 0 skipped** |
+| Suite global | **699 passed, 1 skipped** (el omitido es de comportamiento POSIX en Windows) |
+
+La asunción A-3 de la spec de HU-154 —*"ffmpeg acepta la forma extendida de ruta"*, marcada
+NO VERIFICADA— queda **confirmada por medición**, no por suposición. Era el riesgo R-1 del
+ADR y el único que impedía aceptarlo.
+
+Con esto, **E5 queda habilitada**. `PySceneDetect` sigue pendiente de su propia incorporación
+cuando HU-101 entre a desarrollo: esta aceptación cubre la cadena de ffmpeg, no aquella.
