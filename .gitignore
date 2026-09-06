@@ -94,3 +94,4 @@ items/**/insumos/*.avi
 items/**/insumos/*.MP4
 items/**/insumos/*.MOV
 !items/HU-102
+!items/HANDOFF.md
