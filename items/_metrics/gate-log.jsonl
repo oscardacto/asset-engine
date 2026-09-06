@@ -202,3 +202,8 @@
 {"item":"HU-102","evento":"rework","fecha":"2026-09-06","origen":"validacion con material real","motivo":"la estabilidad comparaba muestras separadas ~1s y daba 0.000 en casi todas las escenas: medía paneo, no temblor","correccion":"comparar cada cuadro con el contiguo; 10 valores distintos en 19 escenas","detectado_por":"7 videos del cliente"}
 {"item":"HU-102","evento":"qa","fecha":"2026-09-06","criterios_total":7,"criterios_fallidos":0,"rework":true,"cobertura_total":"99%","tests":"752 passed, 1 skipped"}
 {"item":"HU-102","evento":"done","fecha":"2026-09-06"}
+{"item":"HU-103","evento":"gate_apertura","fecha":"2026-09-06","epica":"E5","dependencias_satisfechas":["HU-101","HU-102"],"avisos_heredados":["estabilidad real tope 0.404: un umbral de 0.5 vaciaria el lote","la nota general cambiara de valor al entrar la nitidez: los umbrales van por componente","escenas de menos de 1,5 s suelen ser paneo, no cortes"]}
+{"item":"HU-103","evento":"gate_spec","fecha":"2026-09-06","intento":1,"confianza":91,"bloqueantes":0,"importantes":0,"informativas":0,"resultado":"LISTA_PARA_DEV"}
+{"item":"HU-103","evento":"dev","fecha":"2026-09-06","notas":"28 tests, scene_selection.py 100%; umbrales validados sobre 19 escenas reales: 8 conservadas (42%), 0 descartes por exposicion"}
+{"item":"HU-103","evento":"qa","fecha":"2026-09-06","criterios_total":8,"criterios_fallidos":0,"rework":false,"cobertura_modulo":"100%","cobertura_total":"99%","tests":"780 passed, 1 skipped","notas":"umbrales validados sobre 19 escenas reales: 8 conservadas (42%), causas too_short 5 / unstable 10 / poor_exposure 0"}
+{"item":"HU-103","evento":"done","fecha":"2026-09-06"}
