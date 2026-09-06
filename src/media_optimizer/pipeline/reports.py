@@ -236,3 +236,31 @@ def _develop_report(request: ReportRequest) -> str:
 
 
 _GENERADORES["develop"] = _develop_report
+
+
+def _selection_report(request: ReportRequest) -> str:
+    """La selección final: portada, galería y elegibles por formato."""
+    destino = request.workspace / "selection.json"
+    if not filesystem.exists(destino):
+        msg = (
+            f"no hay selección en '{request.workspace}': "
+            "ejecuta primero: media-optimizer run select"
+        )
+        raise InvalidInputError(msg)
+    datos = json.loads(filesystem.read_bytes(destino).decode("utf-8"))
+    encabezado = (
+        "# Selección del lote" if request.output_format == _MARKDOWN else "SELECCIÓN DEL LOTE"
+    )
+    marca = "## " if request.output_format == _MARKDOWN else ""
+    lineas = [encabezado, "", f"{marca}Candidatas a portada"]
+    lineas.extend(f"{i + 1}. {n}" for i, n in enumerate(datos["cover_candidates"]))
+    lineas += ["", f"{marca}Galería (orden narrativo)"]
+    lineas.extend(f"{i + 1}. {n}" for i, n in enumerate(datos["gallery"]))
+    lineas += ["", f"{marca}Elegibles por formato"]
+    lineas.extend(
+        f"- {formato}: {len(nombres)}" for formato, nombres in sorted(datos["by_format"].items())
+    )
+    return "\n".join(lineas) + "\n"
+
+
+_GENERADORES["selection"] = _selection_report

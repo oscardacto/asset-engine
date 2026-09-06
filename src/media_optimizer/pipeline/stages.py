@@ -57,6 +57,13 @@ from media_optimizer.photo import (
     exposure_score,
     verdict_for,
 )
+from media_optimizer.ranking import (
+    RankedAsset,
+    cover_candidates,
+    gallery_order,
+    global_score,
+    select_by_format,
+)
 from media_optimizer.vision import (
     blown_highlights_ratio,
     crushed_shadows_ratio,
@@ -406,3 +413,97 @@ def _paso_a_dict(paso: Transform) -> dict[str, object]:
 
 
 _EJECUTORES["develop"] = _develop
+
+
+# --- etapa select ------------------------------------------------------------
+
+SELECTION_FILENAME = "selection.json"
+_TOP_PORTADA = 5
+
+# Pesos del score global mientras llega el perfil como archivo.
+# TODO(HU-134): pasan al perfil, por intención de salida.
+_PESOS_SCORE = {"exposure_score": 1.0}
+_INTENCIONES = tuple(formato.intent.value for formato in _FORMATOS_SALIDA)
+
+
+def _select(request: StageRequest) -> tuple[tuple[str, ...], bool]:
+    """Analizadas → portada, galería y selección por formato, deterministas."""
+    inventario = load_catalog(request.workspace)
+    ruta_analisis = request.workspace / ANALYSIS_FILENAME
+    if not filesystem.exists(ruta_analisis):
+        msg = (
+            f"no hay análisis en '{request.workspace}': "
+            "ejecuta primero: media-optimizer run analyze"
+        )
+        raise InvalidInputError(msg)
+    analisis = json.loads(filesystem.read_bytes(ruta_analisis).decode("utf-8"))["assets"]
+
+    vistos: set[str] = set()
+    fotos: list[RankedAsset] = []
+    for entrada in inventario.entries:
+        ficha = analisis.get(entrada.content_hash)
+        if ficha is None or entrada.content_hash in vistos:
+            continue
+        vistos.add(entrada.content_hash)
+        fotos.append(
+            RankedAsset(
+                content_hash=entrada.content_hash,
+                source=entrada.source,
+                score=global_score(
+                    {k: float(v) for k, v in ficha["metrics"].items()}, _PESOS_SCORE
+                ),
+                verdict=Verdict(str(ficha["verdict"])),
+                flags=tuple(ficha["flags"]),
+                width=entrada.width,
+                height=entrada.height,
+            )
+        )
+    lote = tuple(fotos)
+
+    portada = cover_candidates(lote, top=_TOP_PORTADA)
+    galeria = gallery_order(lote)
+    por_formato = select_by_format(lote, _INTENCIONES)
+
+    documento = {
+        "version": 1,
+        "cover_candidates": [a.source for a in portada],
+        "gallery": [a.source for a in galeria],
+        "by_format": {
+            intencion: [a.source for a in fotos_formato]
+            for intencion, fotos_formato in sorted(por_formato.items())
+        },
+    }
+    texto = json.dumps(documento, indent=2, sort_keys=True, ensure_ascii=False)
+    filesystem.write_bytes(request.workspace / SELECTION_FILENAME, (texto + "\n").encode("utf-8"))
+
+    resumen = (
+        f"Candidatas a portada: {len(portada)}",
+        f"Galería ordenada: {len(galeria)} fotos",
+        *(
+            f"  {intencion}: {len(fotos_formato)} elegibles"
+            for intencion, fotos_formato in sorted(por_formato.items())
+        ),
+        f"Selección escrita en: {request.workspace / SELECTION_FILENAME}",
+    )
+    return resumen, False
+
+
+# --- secuencia all: el pipeline completo con un comando ----------------------
+
+_SECUENCIA = ("ingest", "analyze", "develop", "select")
+
+
+def _all(request: StageRequest) -> tuple[tuple[str, ...], bool]:
+    """Ejecuta la secuencia completa; una etapa degradada no detiene a las demás."""
+    lineas: list[str] = []
+    parcial = False
+    for nombre in _SECUENCIA:
+        resultado = execute_stage(nombre, request)
+        parcial = parcial or resultado.partial
+        lineas.append(f"── {nombre} ──")
+        lineas.extend(resultado.summary)
+    return tuple(lineas), parcial
+
+
+_EJECUTORES["select"] = _select
+_EJECUTORES["all"] = _all

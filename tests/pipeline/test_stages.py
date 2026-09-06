@@ -165,7 +165,7 @@ class TestDisponibilidadDerivada:
     def test_las_etapas_disponibles_son_exactamente_las_con_ejecutor(self) -> None:
         assert find_stage("ingest") is not None
         assert find_stage("ingest").available is True  # type: ignore[union-attr]
-        assert available_stages() == frozenset({"ingest", "analyze", "develop"})
+        assert available_stages() == frozenset({"ingest", "analyze", "develop", "select", "all"})
 
 
 class TestCapaSecundaria:
@@ -280,3 +280,41 @@ class TestEtapaDevelop:
         execute_stage("ingest", _peticion(tmp_path))
         with pytest.raises(InvalidInputError, match="run analyze"):
             execute_stage("develop", _peticion(tmp_path))
+
+
+class TestEtapaSelectYRunAll:
+    def test_run_all_ejecuta_la_secuencia_completa(self, tmp_path: Path) -> None:
+        _sembrar_lote(tmp_path / "lote")
+
+        resultado = execute_stage("all", _peticion(tmp_path))
+
+        for archivo in ("catalog.json", "analysis.json", "develop.json", "selection.json"):
+            assert filesystem.exists(tmp_path / "salidas" / archivo), archivo
+        texto = "\n".join(resultado.summary)
+        for etapa in ("ingest", "analyze", "develop", "select"):
+            assert f"── {etapa} ──" in texto
+
+    def test_la_seleccion_es_determinista_y_sin_descartes(self, tmp_path: Path) -> None:
+        _sembrar_lote(tmp_path / "lote")
+        execute_stage("all", _peticion(tmp_path))
+        primero = filesystem.read_bytes(tmp_path / "salidas" / "selection.json")
+        execute_stage("select", _peticion(tmp_path))
+        segundo = filesystem.read_bytes(tmp_path / "salidas" / "selection.json")
+        assert primero == segundo
+
+        datos = json.loads(primero.decode("utf-8"))
+        assert set(datos["by_format"]) == {"cover", "feed", "story"}
+        assert datos["gallery"], "la galería no puede salir vacía con fotos publicables"
+
+    def test_select_sin_analisis_dice_que_ejecutar(self, tmp_path: Path) -> None:
+        _sembrar_lote(tmp_path / "lote")
+        execute_stage("ingest", _peticion(tmp_path))
+        with pytest.raises(InvalidInputError, match="run analyze"):
+            execute_stage("select", _peticion(tmp_path))
+
+    def test_run_all_con_fotos_rotas_termina_parcial(self, tmp_path: Path) -> None:
+        lote = tmp_path / "lote"
+        _sembrar_lote(lote)
+        (lote / "rota.jpg").write_bytes(not_an_image())
+        resultado = execute_stage("all", _peticion(tmp_path))
+        assert resultado.partial is True

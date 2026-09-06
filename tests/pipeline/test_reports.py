@@ -90,7 +90,7 @@ class TestEntradasInvalidas:
         self, workspace_con_catalogo: Path
     ) -> None:
         with pytest.raises(InvalidInputError, match="no está disponible"):
-            generate_report("selection", _peticion(workspace_con_catalogo))
+            generate_report("reel", _peticion(workspace_con_catalogo))
 
     def test_el_formato_jsonl_no_aplica_al_inventario(self, workspace_con_catalogo: Path) -> None:
         with pytest.raises(InvalidInputError, match="jsonl"):
@@ -106,7 +106,7 @@ class TestDisponibilidadDerivada:
         entrada = find_report("inventory")
         assert entrada is not None
         assert entrada.available is True
-        assert available_reports() == frozenset({"inventory", "analysis", "develop"})
+        assert available_reports() == frozenset({"inventory", "analysis", "develop", "selection"})
 
 
 class TestCapaSecundaria:
